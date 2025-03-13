@@ -10,6 +10,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.2.17",
     "cheerio": "^1.0.0"
   }
 }
