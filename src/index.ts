@@ -2,33 +2,38 @@ import { extractSitemapURLs } from "./sitemap.ts";
 import { fetchAndParse, extractLinks, extractContent } from "./fetch.ts";
 
 async function processPage(url: string, processedPages: Set<string>, baseUrl: string): Promise<void> {
-  // check if page has already been processed
-  // handle case where link has fragment identifier
-  if (processedPages.has(url.split("#")[0])) {
-    return; // already processed
+  try {
+    // check if page has already been processed
+    // handle case where link has fragment identifier
+    let cleanUrl = url.split("#")[0];
+    if (processedPages.has(cleanUrl)) {
+      return; // already processed
+    }
+
+    console.log(`Processing: ${cleanUrl}`);
+    const $ = await fetchAndParse(cleanUrl);
+
+    const content = await extractContent($);
+    console.log(`Content from ${cleanUrl}:\\n${content.substring(0, 200)}...\\n`); // Log a snippet
+
+    processedPages.add(cleanUrl);
+
+    const links = await extractLinks($);
+    const absoluteLinks = links
+      .filter((link) => !link.startsWith("#")) // filter relative subheading links
+      .map((link) => {
+        try {
+          return new URL(link, cleanUrl).href; // Resolve relative URLs
+        } catch (e) {
+          return null; // Invalid URL
+        }
+      })
+      .filter((absoluteLink): absoluteLink is string => absoluteLink !== null && absoluteLink.startsWith(baseUrl));
+
+    await Promise.all(absoluteLinks.map((link) => processPage(link, processedPages, baseUrl)));
+  } catch (error) {
+    console.error("Error:", error);
   }
-
-  console.log(`Processing: ${url}`);
-  processedPages.add(url);
-
-  const $ = await fetchAndParse(url);
-
-  const content = await extractContent($);
-  console.log(`Content from ${url}:\\n${content.substring(0, 200)}...\\n`); // Log a snippet
-
-  const links = await extractLinks($);
-  const absoluteLinks = links
-    .filter((link) => !link.startsWith("#")) // filter relative subheading links
-    .map((link) => {
-      try {
-        return new URL(link, url).href; // Resolve relative URLs
-      } catch (e) {
-        return null; // Invalid URL
-      }
-    })
-    .filter((absoluteLink): absoluteLink is string => absoluteLink !== null && absoluteLink.startsWith(baseUrl));
-
-  await Promise.all(absoluteLinks.map((link) => processPage(link, processedPages, baseUrl)));
 }
 
 if (import.meta.main) {
