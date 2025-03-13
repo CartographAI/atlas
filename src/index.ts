@@ -1,6 +1,5 @@
 import { extractSitemapURLs } from "./sitemap.ts";
-import { fetchAndExtractContent } from "./fetch.ts";
-import { extractLinks } from "./map.ts";
+import { fetchAndParse, extractLinks, extractContent } from "./fetch.ts";
 
 async function processPage(url: string, processedPages: Set<string>, baseUrl: string): Promise<void> {
   // check if page has already been processed
@@ -12,10 +11,12 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
   console.log(`Processing: ${url}`);
   processedPages.add(url);
 
-  const content = await fetchAndExtractContent(url);
+  const $ = await fetchAndParse(url);
+
+  const content = await extractContent($);
   console.log(`Content from ${url}:\\n${content.substring(0, 200)}...\\n`); // Log a snippet
 
-  const links = await extractLinks(url);
+  const links = await extractLinks($);
   const absoluteLinks = links
     .filter((link) => !link.startsWith("#")) // filter relative subheading links
     .map((link) => {

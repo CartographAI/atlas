@@ -1,16 +1,16 @@
 import * as cheerio from "cheerio";
 
-export async function fetchAndExtractContent(url: string): Promise<string> {
+export async function fetchAndParse(url: string): Promise<cheerio.Root> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+  }
+  const html = await response.text();
+  return cheerio.load(html);
+}
+
+export async function extractContent($: cheerio.Root): Promise<string> {
   try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
-    }
-
-    const html = await response.text();
-    const $ = cheerio.load(html);
-
     // Try to find a main content container
     let mainContent = $("main") || $("article") || $("#content") || $(".content"); // Common selectors
 
@@ -52,6 +52,24 @@ export async function fetchAndExtractContent(url: string): Promise<string> {
     return ""; // Return an empty string on error
   }
 }
+
+export async function extractLinks($: cheerio.Root): Promise<string[]> {
+  try {
+    const links: string[] = [];
+
+    $("a").each((_, element) => {
+      const href = $(element).attr("href");
+      if (href) {
+        links.push(href);
+      }
+    });
+    return links;
+  } catch (error) {
+    console.error("Error:", error);
+    return [];
+  }
+}
+
 // --- Main Execution ---
 if (import.meta.main) {
   const url = Bun.argv[2];
