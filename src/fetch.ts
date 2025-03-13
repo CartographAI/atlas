@@ -1,4 +1,4 @@
-import { parseHTML } from "linkedom";
+import * as cheerio from "cheerio";
 
 export async function fetchAndExtractContent(url: string): Promise<string> {
   try {
@@ -9,19 +9,15 @@ export async function fetchAndExtractContent(url: string): Promise<string> {
     }
 
     const html = await response.text();
-    const { document } = parseHTML(html);
+    const $ = cheerio.load(html);
 
     // Try to find a main content container
-    let mainContent =
-      document.querySelector("main") ||
-      document.querySelector("article") ||
-      document.querySelector("#content") ||
-      document.querySelector(".content"); // Common selectors
+    let mainContent = $("main") || $("article") || $("#content") || $(".content"); // Common selectors
 
     // If no specific container, use the <body>
     if (!mainContent) {
       console.log("no main content found, using body");
-      mainContent = document.body;
+      mainContent = $("body");
     }
 
     // Remove common unwanted elements (navigation, footers, sidebars, etc.)
@@ -44,13 +40,10 @@ export async function fetchAndExtractContent(url: string): Promise<string> {
       ];
 
       for (const selector of unwantedSelectors) {
-        const elementsToRemove = mainContent.querySelectorAll(selector);
-        for (const element of elementsToRemove) {
-          element.remove(); // Remove the element from the DOM
-        }
+        $(selector).remove(); // Remove the element from the DOM
       }
 
-      return mainContent.textContent || ""; // Extract the text content, return empty string if null
+      return mainContent.text(); // Extract the text content, return empty string if null
     }
 
     return ""; // Return empty string if no content found

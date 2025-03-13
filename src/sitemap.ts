@@ -1,4 +1,4 @@
-import { parseHTML } from "linkedom";
+import * as cheerio from "cheerio";
 
 export async function extractSitemapURLs(url: string): Promise<string[]> {
   try {
@@ -8,14 +8,14 @@ export async function extractSitemapURLs(url: string): Promise<string[]> {
     }
 
     const html = await response.text();
-    const { document } = parseHTML(html);
+    const $ = cheerio.load(html);
 
     // 1. Check for <link rel="sitemap" ...> in the <head>
-    const sitemapLink = document.querySelector('head > link[rel="sitemap"]');
+    const sitemapLink = $('head > link[rel="sitemap"]');
     let sitemapURL: string | null = null;
 
-    if (sitemapLink) {
-      const href = sitemapLink.getAttribute("href");
+    if (sitemapLink.length > 0) {
+      const href = sitemapLink.attr("href");
       if (href) {
         sitemapURL = new URL(href, url).href; // Resolve to absolute URL
       }
@@ -62,29 +62,31 @@ async function parseSitemap(sitemapURL: string): Promise<string[]> {
   }
 
   const sitemapContent = await response.text();
-  const { document } = parseHTML(sitemapContent, {
-    contentType: response.headers.get("content-type") ?? "application/xml", //Handle different sitemap content types
+  const $ = cheerio.load(sitemapContent, {
+    xmlMode: response.headers.get("content-type")?.includes("xml") ?? true, //  Handle XML vs. plain text
   });
 
   const urls: string[] = [];
 
   // For XML sitemaps
-  const urlElements = document.querySelectorAll("urlset > url > loc");
-  for (const loc of urlElements) {
-    const urlText = loc.textContent;
+  $("urlset > url > loc").each((_, element) => {
+    const urlText = $(element).text();
     if (urlText) {
       urls.push(urlText);
     }
-  }
+  });
+
   //For sitemap indexes
-  const sitemapElements = document.querySelectorAll("sitemapindex > sitemap > loc");
-  for (const loc of sitemapElements) {
-    const urlText = loc.textContent;
+  $("sitemapindex > sitemap > loc").each((_, element) => {
+    const urlText = $(element).text();
     if (urlText) {
-      const nestedUrls = await parseSitemap(urlText); //recursive call
-      urls.push(...nestedUrls);
+      // Use Promise.resolve to handle the recursive call correctly.
+      Promise.resolve(parseSitemap(urlText)).then((nestedUrls) => {
+        urls.push(...nestedUrls);
+      });
     }
-  }
+  });
+
   //Plain text sitemap
   if (urls.length === 0) {
     const lines = sitemapContent.split("\n");
@@ -98,6 +100,8 @@ async function parseSitemap(sitemapURL: string): Promise<string[]> {
       }
     }
   }
+  // Ensure all nested sitemaps are processed before returning.
+  await Promise.all(urls);
   return urls;
 }
 

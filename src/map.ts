@@ -1,4 +1,4 @@
-import { parseHTML } from "linkedom";
+import * as cheerio from "cheerio";
 
 export async function extractLinks(url: string): Promise<string[]> {
   try {
@@ -7,16 +7,15 @@ export async function extractLinks(url: string): Promise<string[]> {
       throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
     }
     const html = await response.text();
-    const { document } = parseHTML(html);
+    const $ = cheerio.load(html);
     const links: string[] = [];
 
-    const anchorElements = document.querySelectorAll("a"); // Get all <a> elements
-    for (const a of anchorElements) {
-      const href = a.getAttribute("href");
+    $("a").each((_, element) => {
+      const href = $(element).attr("href");
       if (href) {
         links.push(href);
       }
-    }
+    });
     return links;
   } catch (error) {
     console.error("Error:", error);
