@@ -1,6 +1,6 @@
 import { parseHTML } from "linkedom";
 
-async function fetchAndExtractContent(url: string): Promise<string> {
+export async function fetchAndExtractContent(url: string): Promise<string> {
   try {
     const response = await fetch(url);
 
