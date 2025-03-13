@@ -83,7 +83,9 @@ if (import.meta.main) {
     process.exit(1); // Exit with an error code
   }
 
-  fetchAndExtractContent(url).then((content) => {
-    console.log(content);
+  fetchAndParse(url).then(($) => {
+    extractContent($).then((content) => {
+      console.log(content);
+    });
   });
 }
