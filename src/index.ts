@@ -27,9 +27,7 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
     })
     .filter((absoluteLink): absoluteLink is string => absoluteLink !== null && absoluteLink.startsWith(baseUrl));
 
-  for (const link of absoluteLinks) {
-    await processPage(link, processedPages, baseUrl); // Recursive call
-  }
+  await Promise.all(absoluteLinks.map((link) => processPage(link, processedPages, baseUrl)));
 }
 
 if (import.meta.main) {
@@ -50,9 +48,7 @@ if (import.meta.main) {
 
   if (sitemapURLs.length > 0) {
     console.log("Processing sitemap URLs...");
-    for (const sitemapURL of sitemapURLs) {
-      await processPage(sitemapURL, processedPages, url);
-    }
+    await Promise.all(sitemapURLs.map((sitemapURL) => processPage(sitemapURL, processedPages, url)));
   } else {
     console.log("No sitemap found, crawling from root URL...");
     await processPage(url, processedPages, url); // Start crawling from the provided URL
