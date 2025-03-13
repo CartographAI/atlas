@@ -3,12 +3,14 @@
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/cheerio": "^0.22.35"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "cheerio": "^1.0.0",
     "linkedom": "^0.18.9"
   }
 }
