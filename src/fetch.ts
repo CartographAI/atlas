@@ -43,7 +43,7 @@ export async function extractContent($: cheerio.Root): Promise<string> {
         $(selector).remove(); // Remove the element from the DOM
       }
 
-      return mainContent.text(); // Extract the text content, return empty string if null
+      return mainContent.html() || ""; // Extract the text content, return empty string if null
     }
 
     return ""; // Return empty string if no content found
