@@ -1,3 +1,4 @@
+import { PGlite } from "@electric-sql/pglite";
 import { extractSitemapURLs } from "./sitemap.ts";
 import { fetchAndParse, extractLinks, extractContent } from "./fetch.ts";
 
@@ -47,6 +48,9 @@ if (import.meta.main) {
     console.error("Please provide a valid URL as a command-line argument.");
     process.exit(1);
   }
+  const db = new PGlite();
+  const schemaSql = await Bun.file("src/db/schema.sql").text();
+  await db.exec(schemaSql);
 
   const processedPages = new Set<string>();
 
