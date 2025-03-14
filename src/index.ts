@@ -2,7 +2,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { extractSitemapURLs } from "./sitemap.ts";
 import { fetchAndParse, extractLinks, extractContent } from "./fetch.ts";
 
-async function processPage(url: string, processedPages: Set<string>, baseUrl: string): Promise<void> {
+async function processPage(url: string, processedPages: Set<string>, baseUrl: string, db: PGlite): Promise<void> {
   try {
     // check if page has already been processed
     // handle case where link has fragment identifier
@@ -15,7 +15,10 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
     const $ = await fetchAndParse(cleanUrl);
 
     const content = await extractContent($);
-    console.log(`Content from ${cleanUrl}:\\n${content.substring(0, 200)}...\\n`); // Log a snippet
+    await db.query(
+      "INSERT INTO pages (url, raw_html) VALUES ($1, $2) ON CONFLICT (url) DO UPDATE SET raw_html = $2, updated_at = CURRENT_TIMESTAMP",
+      [cleanUrl, content],
+    );
 
     processedPages.add(cleanUrl);
 
@@ -31,7 +34,7 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
       })
       .filter((absoluteLink): absoluteLink is string => absoluteLink !== null && absoluteLink.startsWith(baseUrl));
 
-    await Promise.all(absoluteLinks.map((link) => processPage(link, processedPages, baseUrl)));
+    await Promise.all(absoluteLinks.map((link) => processPage(link, processedPages, baseUrl, db)));
   } catch (error) {
     console.error("Error:", error);
   }
@@ -58,11 +61,11 @@ if (import.meta.main) {
 
   if (sitemapURLs.length > 0) {
     console.log("Processing sitemap URLs...");
-    await Promise.all(sitemapURLs.map((sitemapURL) => processPage(sitemapURL, processedPages, url)));
+    await Promise.all(sitemapURLs.map((sitemapURL) => processPage(sitemapURL, processedPages, url, db)));
   } else {
     console.log("No sitemap found, crawling from root URL...");
-    await processPage(url, processedPages, url); // Start crawling from the provided URL
+    await processPage(url, processedPages, url, db); // Start crawling from the provided URL
   }
-
-  console.log("Finished processing.");
+  const numberPages = await db.query("select count(*) from pages");
+  console.log(`Finished processing ${numberPages.rows[0].count} pages.`);
 }
