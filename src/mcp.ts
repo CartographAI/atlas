@@ -75,20 +75,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         if (url) {
           await indexPage(url);
+        } else if (name && name in libraryToURL) {
+          await indexPage(libraryToURL[name]);
         } else {
-          if (name in libraryToURL) {
-            await indexPage(libraryToURL[name]);
-          } else {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `Documentation URL not found for ${name}, please use the URL of the documentation site.`,
-                },
-              ],
-              isError: true,
-            };
-          }
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Documentation URL not found for ${name}, please use the URL of the documentation site.`,
+              },
+            ],
+            isError: true,
+          };
         }
 
         return {
