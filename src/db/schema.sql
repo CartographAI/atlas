@@ -1,4 +1,4 @@
-CREATE TABLE pages (
+CREATE TABLE IF NOT EXISTS pages (
     id SERIAL PRIMARY KEY,
     url TEXT UNIQUE NOT NULL,
     raw_html TEXT,

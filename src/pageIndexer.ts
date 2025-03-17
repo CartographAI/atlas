@@ -8,11 +8,7 @@ const markdownSchema = z.object({
   markdown: z.string(),
 });
 
-export async function indexPage(url: string) {
-  const db = new PGlite();
-  const schemaSql = await Bun.file("src/db/schema.sql").text();
-  await db.exec(schemaSql);
-
+export async function indexPage(url: string, db: PGlite) {
   const processedPages = new Set<string>();
 
   const sitemapURLs = await extractSitemapURLs(url);
@@ -112,5 +108,6 @@ if (import.meta.main) {
     process.exit(1);
   }
 
-  indexPage(url);
+  const db = new PGlite();
+  indexPage(url, db);
 }

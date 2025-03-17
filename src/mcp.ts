@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
+import os from "node:os";
+import path from "node:path";
+import { PGlite } from "@electric-sql/pglite";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, ToolSchema } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { indexPage } from "./pageIndexer";
+import { ensureDirectoryExists } from "./utils";
 
 const server = new Server(
   {
@@ -18,6 +22,12 @@ const server = new Server(
     },
   },
 );
+
+const cacheDirectory = path.join(os.homedir(), ".cache", "atlas");
+await ensureDirectoryExists(cacheDirectory);
+const db = new PGlite(cacheDirectory);
+const schemaSql = await Bun.file("src/db/schema.sql").text();
+await db.exec(schemaSql);
 
 const libraryToURL: { [key: string]: string } = {
   react: "https://react.dev/reference/react",
@@ -74,9 +84,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const url = parsedArgs.data.url;
 
         if (url) {
-          await indexPage(url);
+          await indexPage(url, db);
         } else if (name && name in libraryToURL) {
-          await indexPage(libraryToURL[name]);
+          await indexPage(libraryToURL[name], db);
         } else {
           return {
             content: [
