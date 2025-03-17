@@ -1,6 +1,12 @@
 import { PGlite } from "@electric-sql/pglite";
 import { extractSitemapURLs } from "./sitemap.ts";
 import { fetchAndParse, extractLinks, extractContent } from "./fetch.ts";
+import { generateGeminiObject } from "./ai.ts";
+import { z } from "zod";
+
+const markdownSchema = z.object({
+  markdown: z.string(),
+});
 
 async function processPage(url: string, processedPages: Set<string>, baseUrl: string, db: PGlite): Promise<void> {
   try {
@@ -15,9 +21,45 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
     const $ = await fetchAndParse(cleanUrl);
 
     const content = await extractContent($);
+
+    if (content === null) {
+      console.error("content is null");
+      return;
+    }
+    const html = content.html();
+    const text = content.text();
+
+    // Check if the page exists and if content has changed
+    const existingPage = await db.query("SELECT raw_html, markdown FROM pages WHERE url = $1", [cleanUrl]);
+
+    const existingContent = existingPage.rows[0]?.raw_html;
+    const existingMarkdown = existingPage.rows[0]?.markdown;
+
+    let markdown: string | null = existingMarkdown;
+
+    // Only generate new markdown if content is new or has changed
+    if (!existingContent || existingContent !== html) {
+      try {
+        const result = await generateGeminiObject(
+          [
+            {
+              role: "user",
+              content: `You are to create well-formatted markdown from a HTML page. You are given the HTML (raw html from the page) as well as the TEXT (just the text from the page). Use the HTML to understand the structure and TEXT to understand the content and use both to create a markdown output.\n\n<HTML>\n${html}\n</HTML>\n\n<TEXT>\n${text}\n</TEXT>`,
+            },
+          ],
+          markdownSchema,
+        );
+        markdown = result?.markdown ?? null;
+      } catch (error) {
+        console.error(`Error generating markdown for ${cleanUrl}:`, error);
+        markdown = null;
+      }
+    }
+
+    // Insert or update the page
     await db.query(
-      "INSERT INTO pages (url, raw_html) VALUES ($1, $2) ON CONFLICT (url) DO UPDATE SET raw_html = $2, updated_at = CURRENT_TIMESTAMP",
-      [cleanUrl, content],
+      "INSERT INTO pages (url, raw_html, markdown) VALUES ($1, $2, $3) ON CONFLICT (url) DO UPDATE SET raw_html = $2, markdown = $3, updated_at = CURRENT_TIMESTAMP",
+      [cleanUrl, html, markdown],
     );
 
     processedPages.add(cleanUrl);

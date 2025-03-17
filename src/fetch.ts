@@ -9,7 +9,7 @@ export async function fetchAndParse(url: string): Promise<cheerio.Root> {
   return cheerio.load(html);
 }
 
-export async function extractContent($: cheerio.Root): Promise<string> {
+export async function extractContent($: cheerio.Root): Promise<cheerio.Cheerio | null> {
   try {
     // Try to find a main content container
     let mainContent = $("main") || $("article") || $("#content") || $(".content"); // Common selectors
@@ -43,13 +43,13 @@ export async function extractContent($: cheerio.Root): Promise<string> {
         $(selector).remove(); // Remove the element from the DOM
       }
 
-      return mainContent.html() || ""; // Extract the text content, return empty string if null
+      return mainContent;
     }
 
-    return ""; // Return empty string if no content found
+    return null; // Return null if no content found
   } catch (error) {
     console.error("Error:", error);
-    return ""; // Return an empty string on error
+    return null; // Return null on error
   }
 }
 
