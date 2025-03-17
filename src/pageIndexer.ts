@@ -18,14 +18,13 @@ export async function indexPage(url: string) {
   const sitemapURLs = await extractSitemapURLs(url);
 
   if (sitemapURLs.length > 0) {
-    console.log("Processing sitemap URLs...");
     await Promise.all(sitemapURLs.map((sitemapURL) => processPage(sitemapURL, processedPages, url, db)));
   } else {
-    console.log("No sitemap found, crawling from root URL...");
+    console.warn("No sitemap found, crawling from root URL...");
     await processPage(url, processedPages, url, db); // Start crawling from the provided URL
   }
   const numberPages = await db.query("select count(*) from pages");
-  console.log(`Finished processing ${numberPages.rows[0].count} pages.`);
+  console.warn(`Finished processing ${numberPages.rows[0].count} pages.`);
 }
 
 async function processPage(url: string, processedPages: Set<string>, baseUrl: string, db: PGlite): Promise<void> {
@@ -37,7 +36,6 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
       return; // already processed
     }
 
-    console.log(`Processing: ${cleanUrl}`);
     const $ = await fetchAndParse(cleanUrl);
 
     const content = await extractContent($);
