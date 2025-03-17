@@ -20,13 +20,24 @@ const server = new Server(
 );
 
 const libraryToURL: { [key: string]: string } = {
+  react: "https://react.dev/reference/react",
   svelte: "https://svelte.dev/docs/svelte",
 };
 
 const IndexArgsSchema = z
   .object({
-    name: z.string().optional().describe("name of library/framework to index"),
-    url: z.string().optional().describe("url of website to crawl and index"),
+    name: z
+      .string()
+      .optional()
+      .describe(
+        "The name of a supported library or framework (e.g., 'react'/'svelte'). If provided, the tool will automatically use the corresponding documentation URL.",
+      ),
+    url: z
+      .string()
+      .optional()
+      .describe(
+        "The direct URL of a documentation website to crawl and index. Use this when the library name isn't in the predefined list or when indexing a custom documentation site",
+      ),
   })
   .refine((data) => data.name || data.url, {
     message: "At least one of 'name' or 'url' is required",
@@ -40,7 +51,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "index",
-        description: "Indexes the website a exposes the website",
+        description:
+          "Indexes and processes a documentation website to make it programmatically accessible. This tool crawls the specified website, extracts relevant content, and structures it for easy querying. Supports both direct URL input and predefined library names (e.g., 'react'/'svelte') for common documentation sites.",
         inputSchema: zodToJsonSchema(IndexArgsSchema) as ToolInput,
       },
     ],
