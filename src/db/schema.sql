@@ -2,6 +2,7 @@ CREATE TABLE pages (
     id SERIAL PRIMARY KEY,
     url TEXT UNIQUE NOT NULL,
     raw_html TEXT,
+    markdown TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
