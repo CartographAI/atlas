@@ -1,16 +1,8 @@
-import { indexPage } from "./pageIndexer";
+import { runServer } from "./mcp";
 
 if (import.meta.main) {
-  const url = Bun.argv[2];
-
-  if (!url) {
-    console.error("Please provide a URL as a command-line argument.");
+  runServer().catch((error) => {
+    console.error("Fatal error running server:", error);
     process.exit(1);
-  }
-  if (!URL.canParse(url)) {
-    console.error("Please provide a valid URL as a command-line argument.");
-    process.exit(1);
-  }
-
-  indexPage(url);
+  });
 }

@@ -62,7 +62,7 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
           [
             {
               role: "user",
-              content: `You are to create well-formatted markdown from a HTML page. You are given the HTML (raw html from the page) as well as the TEXT (just the text from the page). Use the HTML to understand the structure and TEXT to understand the content and use both to create a markdown output.\n\n<HTML>\n${html}\n</HTML>\n\n<TEXT>\n${text}\n</TEXT>`,
+              content: `You are to create well-formatted markdown from a HTML page. You are given the HTML (raw html from the page) as well as the TEXT (just the text from the page). Use the HTML to understand the structure and TEXT to understand the content and use both to create a markdown output.\n\n<HTML>\n\`\`\`${html}\`\`\`\n</HTML>\n\n<TEXT>\n\`\`\`${text}\`\`\`\n</TEXT>`,
             },
           ],
           markdownSchema,
@@ -98,4 +98,19 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
   } catch (error) {
     console.error("Error:", error);
   }
+}
+
+if (import.meta.main) {
+  const url = Bun.argv[2];
+
+  if (!url) {
+    console.error("Please provide a URL as a command-line argument.");
+    process.exit(1);
+  }
+  if (!URL.canParse(url)) {
+    console.error("Please provide a valid URL as a command-line argument.");
+    process.exit(1);
+  }
+
+  indexPage(url);
 }

@@ -109,7 +109,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Start server
-async function runServer() {
+export async function runServer() {
   try {
     const transport = new StdioServerTransport();
     await server.connect(transport);
