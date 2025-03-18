@@ -53,6 +53,10 @@ const IndexArgsSchema = z
     message: "At least one of 'name' or 'url' is required",
   });
 
+const TreeArgsSchema = z.object({ name: z.string(), maxDepth: z.number() });
+
+const ReadPageArgsSchema = z.object({ name: z.string(), path: z.string() });
+
 const ToolInputSchema = ToolSchema.shape.inputSchema;
 type ToolInput = z.infer<typeof ToolInputSchema>;
 
@@ -64,6 +68,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description:
           "Indexes and processes a documentation website to make it programmatically accessible. This tool crawls the specified website, extracts relevant content, and structures it for easy querying. Supports both direct URL input and predefined library names (e.g., 'react'/'svelte') for common documentation sites.",
         inputSchema: zodToJsonSchema(IndexArgsSchema) as ToolInput,
+      },
+      {
+        name: "tree",
+        description:
+          "Generate a tree-style visualization of the documentation structure for a given library. Shows the hierarchy of pages and sections in a readable format. Use this to understand what documentation pages are available.",
+        inputSchema: zodToJsonSchema(TreeArgsSchema) as ToolInput,
+      },
+      {
+        name: "read_page",
+        description:
+          "Read the content of a specific documentation page. Returns the processed markdown content of the page, making it easy to access and understand the documentation.",
+        inputSchema: zodToJsonSchema(ReadPageArgsSchema) as ToolInput,
       },
     ],
   };
@@ -101,6 +117,110 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         return {
           content: [{ type: "text", text: "Page indexed sucessfully" }],
+        };
+      }
+      case "tree": {
+        const parsedArgs = TreeArgsSchema.safeParse(args);
+        if (!parsedArgs.success) {
+          throw new Error(`Invalid arguments for tree: ${parsedArgs.error}`);
+        }
+
+        const { name, maxDepth } = parsedArgs.data;
+
+        // Get all pages for the given library
+        const baseUrl = libraryToURL[name];
+        if (!baseUrl) {
+          return {
+            content: [{ type: "text", text: `Library "${name}" not found in supported libraries` }],
+            isError: true,
+          };
+        }
+
+        const pages = await db.query("SELECT url FROM pages WHERE url LIKE $1", [`${baseUrl}%`]);
+
+        if (pages.rows.length === 0) {
+          return {
+            content: [
+              { type: "text", text: `No pages found for library "${name}". Have you indexed it using the index tool?` },
+            ],
+            isError: true,
+          };
+        }
+
+        // Build a tree structure from URLs
+        const tree: { [key: string]: any } = {};
+        for (const { url } of pages.rows) {
+          const relativePath = new URL(url).pathname.replace(new URL(baseUrl).pathname, "");
+          const path = relativePath.split("/").filter(Boolean);
+          let current = tree;
+          for (let i = 0; i < path.length && (maxDepth === 0 || i < maxDepth); i++) {
+            const segment = path[i];
+            current[segment] = current[segment] || {};
+            current = current[segment];
+          }
+        }
+
+        // Convert tree to string representation
+        function treeToString(node: any, prefix = "", isLast = true): string {
+          const entries = Object.entries(node);
+          if (entries.length === 0) return "";
+
+          let result = "";
+          entries.forEach(([key, value], index) => {
+            const isLastEntry = index === entries.length - 1;
+            const marker = isLast ? "└── " : "├── ";
+            const childPrefix = isLast ? "    " : "│   ";
+
+            result += prefix + marker + key + "\n";
+            result += treeToString(value, prefix + childPrefix, isLastEntry);
+          });
+          return result;
+        }
+
+        return {
+          content: [{ type: "text", text: treeToString(tree) }],
+        };
+      }
+
+      case "read_page": {
+        const parsedArgs = ReadPageArgsSchema.safeParse(args);
+        if (!parsedArgs.success) {
+          throw new Error(`Invalid arguments for read_page: ${parsedArgs.error}`);
+        }
+
+        const { name, path } = parsedArgs.data;
+
+        const baseUrl = libraryToURL[name];
+        if (!baseUrl) {
+          return {
+            content: [{ type: "text", text: `Library "${name}" not found in supported libraries` }],
+            isError: true,
+          };
+        }
+
+        // Construct the full URL
+        const fullUrl = new URL(path, baseUrl).href;
+
+        // Query the database for the page content
+        const page = await db.query("SELECT markdown FROM pages WHERE url = $1", [fullUrl]);
+
+        if (page.rows.length === 0) {
+          return {
+            content: [{ type: "text", text: `Page not found. Have you indexed the library using the index tool?` }],
+            isError: true,
+          };
+        }
+
+        const markdown = page.rows[0].markdown;
+        if (!markdown) {
+          return {
+            content: [{ type: "text", text: `No markdown content available for this page` }],
+            isError: true,
+          };
+        }
+
+        return {
+          content: [{ type: "text", text: markdown }],
         };
       }
       default:
