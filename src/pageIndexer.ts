@@ -4,7 +4,9 @@ import { fetchAndParse, extractLinks, extractContent } from "./fetch.ts";
 import { generateGeminiObject } from "./ai.ts";
 import { z } from "zod";
 
-const markdownSchema = z.object({
+const pageSchema = z.object({
+  title: z.string(),
+  description: z.string(),
   markdown: z.string(),
 });
 
@@ -44,11 +46,17 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
     const text = content.text();
 
     // Check if the page exists and if content has changed
-    const existingPage = await db.query("SELECT raw_html, markdown FROM pages WHERE url = $1", [cleanUrl]);
+    const existingPage = await db.query("SELECT raw_html, markdown, title, description FROM pages WHERE url = $1", [
+      cleanUrl,
+    ]);
 
     const existingContent = existingPage.rows[0]?.raw_html;
+    const existingTitle = existingPage.rows[0]?.title;
+    const existingDescription = existingPage.rows[0]?.description;
     const existingMarkdown = existingPage.rows[0]?.markdown;
 
+    let title: string | null = existingTitle;
+    let description: string | null = existingDescription;
     let markdown: string | null = existingMarkdown;
 
     // Only generate new markdown if content is new or has changed
@@ -58,22 +66,26 @@ async function processPage(url: string, processedPages: Set<string>, baseUrl: st
           [
             {
               role: "user",
-              content: `You are to create well-formatted markdown from a HTML page. You are given the HTML (raw html from the page) as well as the TEXT (just the text from the page). Use the HTML to understand the structure and TEXT to understand the content and use both to create a markdown output.\n\n<HTML>\n\`\`\`${html}\`\`\`\n</HTML>\n\n<TEXT>\n\`\`\`${text}\`\`\`\n</TEXT>`,
+              content: `You are to create well-formatted markdown from a HTML page. You are given the HTML (raw html from the page) as well as the TEXT (just the text from the page). Use the HTML to understand the structure and TEXT to understand the content and use both to create a markdown output. Output the title of the page as well a concise one-line description of the page.\n\n<HTML>\n\`\`\`${html}\`\`\`\n</HTML>\n\n<TEXT>\n\`\`\`${text}\`\`\`\n</TEXT>.`,
             },
           ],
-          markdownSchema,
+          pageSchema,
         );
         markdown = result?.markdown ?? null;
+        title = result?.title ?? null;
+        description = result?.description ?? null;
       } catch (error) {
         console.error(`Error generating markdown for ${cleanUrl}:`, error);
         markdown = null;
+        title = null;
+        description = null;
       }
     }
 
     // Insert or update the page
     await db.query(
-      "INSERT INTO pages (url, raw_html, markdown) VALUES ($1, $2, $3) ON CONFLICT (url) DO UPDATE SET raw_html = $2, markdown = $3, updated_at = CURRENT_TIMESTAMP",
-      [cleanUrl, html, markdown],
+      "INSERT INTO pages (url, title, description, raw_html, markdown) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (url) DO UPDATE SET raw_html = $4, markdown = $5, title = $2, description = $3, updated_at = CURRENT_TIMESTAMP",
+      [cleanUrl, title, description, html, markdown],
     );
 
     processedPages.add(cleanUrl);
@@ -109,5 +121,9 @@ if (import.meta.main) {
   }
 
   const db = new PGlite();
-  indexPage(url, db);
+  const schemaSql = await Bun.file("src/db/schema.sql").text();
+  await db.exec(schemaSql);
+  await indexPage(url, db);
+  const response = await db.query("select * from pages");
+  console.log(response);
 }
