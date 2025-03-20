@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { getDocs, getDocsById } from "./database/docsRepository";
-import { getPageById, getPagesByDocId } from "./database/pagesRepository";
+import { getDocs, getDocsByName } from "./database/docsRepository";
+import { getPageByName, getPagesByDocId } from "./database/pagesRepository";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
@@ -20,12 +20,12 @@ app.get("/docs", async (c) => {
   }
 });
 
-// GET doc by docId
-app.get("/docs/:docId", zValidator("param", z.object({ docId: z.coerce.number() })), async (c) => {
+// GET doc by docName
+app.get("/docs/:docName", zValidator("param", z.object({ docName: z.coerce.string() })), async (c) => {
   try {
-    const { docId } = c.req.valid("param");
+    const { docName } = c.req.valid("param");
 
-    const doc = await getDocsById(docId);
+    const doc = await getDocsByName(docName);
 
     if (!doc) {
       return c.json({ error: "Doc not found" }, 404);
@@ -37,18 +37,17 @@ app.get("/docs/:docId", zValidator("param", z.object({ docId: z.coerce.number() 
   }
 });
 
-// GET all pages for docs by docId
-app.get("/docs/:docId/pages/", zValidator("param", z.object({ docId: z.coerce.number() })), async (c) => {
+// GET all pages for docs by docName
+app.get("/docs/:docName/pages/", zValidator("param", z.object({ docName: z.coerce.string() })), async (c) => {
   try {
-    const { docId } = c.req.valid("param");
+    const { docName } = c.req.valid("param");
 
-    // Rest of the logic remains the same
-    const docExists = await getDocsById(docId);
+    const docExists = await getDocsByName(docName);
     if (!docExists) {
       return c.json({ error: "Doc not found" }, 404);
     }
 
-    const page = await getPagesByDocId(docId);
+    const page = await getPagesByDocId(docExists.id);
 
     if (!page) {
       return c.json({ error: "Page not found" }, 404);
@@ -60,21 +59,21 @@ app.get("/docs/:docId/pages/", zValidator("param", z.object({ docId: z.coerce.nu
   }
 });
 
-// GET page by docId and pageId
+// GET page by docName and pageName
 app.get(
-  "/docs/:docId/pages/:pageId",
-  zValidator("param", z.object({ docId: z.coerce.number(), pageId: z.coerce.number() })),
+  "/docs/:docName/pages/:pageName",
+  zValidator("param", z.object({ docName: z.coerce.string(), pageName: z.coerce.string() })),
   async (c) => {
     try {
-      const { docId, pageId } = c.req.valid("param");
+      const { docName, pageName } = c.req.valid("param");
 
-      // Rest of the logic remains the same
-      const docExists = await getDocsById(docId);
+      // This can be optimized into a single call
+      const docExists = await getDocsByName(docName);
       if (!docExists) {
         return c.json({ error: "Doc not found" }, 404);
       }
 
-      const page = await getPageById(docId, pageId);
+      const page = await getPageByName(docExists.id, pageName);
 
       if (!page) {
         return c.json({ error: "Page not found" }, 404);
