@@ -5,7 +5,7 @@ export async function getPagesByDocId(docId: number): Promise<Page[]> {
   return dbClient.selectFrom("pages").selectAll().where("docId", "=", docId).execute();
 }
 
-export async function getPage(docId: number, pageId: number): Promise<Page | undefined> {
+export async function getPageById(docId: number, pageId: number): Promise<Page | undefined> {
   return dbClient
     .selectFrom("pages")
     .selectAll()

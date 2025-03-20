@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { getDocs, getDocsById } from "./database/docsRepository";
-import { getPage, getPagesByDocId } from "./database/pagesRepository";
+import { getPageById, getPagesByDocId } from "./database/pagesRepository";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
@@ -74,7 +74,7 @@ app.get(
         return c.json({ error: "Doc not found" }, 404);
       }
 
-      const page = await getPage(docId, pageId);
+      const page = await getPageById(docId, pageId);
 
       if (!page) {
         return c.json({ error: "Page not found" }, 404);
