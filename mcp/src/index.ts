@@ -6,7 +6,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, ToolSchema } from "@mode
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
-const API_BASE_URL = "http://localhost:3000";
+const ATLAS_BASE_URL = process.env.ATLAS_BASE_URL ?? "";
 
 const server = new Server(
   {
@@ -56,7 +56,7 @@ const ToolInputSchema = ToolSchema.shape.inputSchema;
 type ToolInput = z.infer<typeof ToolInputSchema>;
 
 async function fetchApi(path: string) {
-  const response = await fetch(`${API_BASE_URL}${path}`);
+  const response = await fetch(`${ATLAS_BASE_URL}${path}`);
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || "API request failed");
