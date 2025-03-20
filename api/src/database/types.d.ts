@@ -12,24 +12,24 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface Docs {
-  createdAt: Generated<Timestamp | null>;
+  createdAt: Generated<Timestamp>;
   description: string | null;
   id: Generated<number>;
   name: string;
   sourceUrl: string;
-  updatedAt: Generated<Timestamp | null>;
+  updatedAt: Generated<Timestamp>;
 }
 
 export interface Pages {
-  createdAt: Generated<Timestamp | null>;
+  createdAt: Generated<Timestamp>;
   description: string | null;
-  docId: number | null;
+  docId: number;
   id: Generated<number>;
-  processedContent: string | null;
+  processedContent: string;
   slug: string;
   sourceContent: string | null;
   title: string;
-  updatedAt: Generated<Timestamp | null>;
+  updatedAt: Generated<Timestamp>;
 }
 
 export interface DB {
