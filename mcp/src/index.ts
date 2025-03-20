@@ -24,16 +24,32 @@ const server = new Server(
 const ListDocsSchema = z.object({});
 
 const LlmsTxtSchema = z.object({
-  docName: z.string().describe("Name of the documentation to retrieve LLM-friendly index"),
+  docName: z
+    .string()
+    .describe(
+      "The unique identifier or name of the documentation set you want to explore. Get this from list_docs first if you're unsure.",
+    ),
 });
 
 const LlmsFullTxtSchema = z.object({
-  docName: z.string().describe("Name of the documentation to retrieve full content"),
+  docName: z
+    .string()
+    .describe(
+      "The unique identifier or name of the documentation set you want to explore. Get this from list_docs first if you're unsure.",
+    ),
 });
 
 const GetPageSchema = z.object({
-  docName: z.string().describe("Name of the documentation"),
-  pageName: z.string().describe("Name of the specific page"),
+  docName: z
+    .string()
+    .describe(
+      "The unique identifier or name of the documentation set you want to explore. Get this from list_docs first if you're unsure.",
+    ),
+  pageName: z
+    .string()
+    .describe(
+      "The specific page identifier or path within the documentation. This is typically obtained from search results or documentation structure.",
+    ),
 });
 
 const ToolInputSchema = ToolSchema.shape.inputSchema;
@@ -53,22 +69,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "list_docs",
-        description: "Lists all available documentation with basic metadata",
+        description:
+          "Lists all available documentation libraries and frameworks. Use this first to discover what documentation is available and get basic metadata about each documentation set. Returns a list of documentation sets with their names, descriptions, and types.",
         inputSchema: zodToJsonSchema(ListDocsSchema) as ToolInput,
       },
       {
         name: "llms_txt",
-        description: "Retrieves LLM-friendly index for a specific documentation",
+        description:
+          "Retrieves a condensed, LLM-friendly index of a documentation set. Use this when you need a high-level understanding of what topics and concepts are covered in a library's documentation. This is ideal for initial exploration or when you need to determine which parts of the documentation are relevant to a user's query.",
         inputSchema: zodToJsonSchema(LlmsTxtSchema) as ToolInput,
       },
       {
         name: "llms_full_txt",
-        description: "Retrieves all pages concatenated for a documentation",
+        description:
+          "Retrieves the complete documentation content in a single consolidated file. Use this when you need comprehensive knowledge about a library or when you need to search through the entire documentation for specific details. Note that this returns a larger volume of text.",
         inputSchema: zodToJsonSchema(LlmsFullTxtSchema) as ToolInput,
       },
       {
         name: "get_page",
-        description: "Retrieves a specific page from a documentation",
+        description:
+          "Retrieves a specific documentation page's content. Use this when you already know which page contains the information you need, or after using search to identify relevant pages. This provides detailed information about a specific topic, function, or feature.",
         inputSchema: zodToJsonSchema(GetPageSchema) as ToolInput,
       },
     ],
