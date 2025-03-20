@@ -1,6 +1,6 @@
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import * as pg from "pg";
-import type { DB } from "./types.d.ts";
+import type { DB } from "./db.d.ts";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
