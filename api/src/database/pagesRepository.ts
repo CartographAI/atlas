@@ -14,6 +14,15 @@ export async function getPageById(docId: number, pageId: number): Promise<Page |
     .executeTakeFirst();
 }
 
+export async function getPageByName(docId: number, pageName: string): Promise<Page | undefined> {
+  return dbClient
+    .selectFrom("pages")
+    .selectAll()
+    .where("docId", "=", docId)
+    .where("slug", "=", pageName)
+    .executeTakeFirst();
+}
+
 export async function createPage(page: NewPage): Promise<Page> {
   const insertedPage = await dbClient.insertInto("pages").values(page).returningAll().executeTakeFirst();
   if (!insertedPage) throw new Error("Failed to create page");

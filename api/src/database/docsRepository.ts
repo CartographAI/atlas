@@ -9,6 +9,10 @@ export async function getDocsById(id: number): Promise<Doc | undefined> {
   return dbClient.selectFrom("docs").selectAll().where("id", "=", id).executeTakeFirst();
 }
 
+export async function getDocsByName(name: string): Promise<Doc | undefined> {
+  return dbClient.selectFrom("docs").selectAll().where("name", "=", name).executeTakeFirst();
+}
+
 export async function createDoc(doc: NewDoc): Promise<Doc> {
   const insertedDoc = await dbClient.insertInto("docs").values(doc).returningAll().executeTakeFirst();
   if (!insertedDoc) throw new Error("Failed to create doc");
