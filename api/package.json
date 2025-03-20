@@ -5,6 +5,7 @@
     "db:typegen": "kysely-codegen --include-pattern='public.*' --camel-case --out-file src/database/db.d.ts"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.4.3",
     "hono": "^4.7.4",
     "kysely": "^0.27.6",
     "pg": "^8.14.1"
