@@ -6,13 +6,20 @@
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",
+    "@mozilla/readability": "^0.6.0",
+    "axios": "^1.8.4",
+    "dompurify": "^3.2.4",
     "hono": "^4.7.4",
+    "jsdom": "^26.0.0",
     "kysely": "^0.27.6",
-    "pg": "^8.14.1"
+    "pg": "^8.14.1",
+    "turndown": "^7.2.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/jsdom": "^21.1.7",
     "@types/pg": "^8.11.11",
+    "@types/turndown": "^5.0.5",
     "kysely-codegen": "^0.18.3"
   }
 }
