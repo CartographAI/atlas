@@ -4,7 +4,7 @@ import axios from "axios";
 import TurndownService from "turndown";
 import DOMPurify from "dompurify";
 
-async function fetchAndParse(url: string): Promise<JSDOM> {
+export async function fetchAndParse(url: string): Promise<JSDOM> {
   try {
     const response = await axios.get(url, {
       headers: {
@@ -20,7 +20,7 @@ async function fetchAndParse(url: string): Promise<JSDOM> {
   }
 }
 
-function extractContent(dom: JSDOM) {
+export function extractContent(dom: JSDOM) {
   const document = dom.window.document;
 
   // Use Readability to extract main content
@@ -54,7 +54,7 @@ function extractContent(dom: JSDOM) {
   };
 }
 
-function extractLinks(dom: JSDOM): string[] {
+export function extractLinks(dom: JSDOM): string[] {
   const links: string[] = [];
   const document = dom.window.document;
 
