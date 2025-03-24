@@ -23,6 +23,15 @@ export async function fetchAndParse(url: string): Promise<JSDOM> {
 export function extractContent(dom: JSDOM) {
   const document = dom.window.document;
 
+  // if no children in body, then its already in markdown format
+  if (document.body.children.length === 0) {
+    return {
+      title: "",
+      content: document.body.innerHTML,
+      description: "",
+    };
+  }
+
   // Use Readability to extract main content
   const reader = new Readability(document);
   const article = reader.parse();
