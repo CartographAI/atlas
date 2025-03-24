@@ -50,7 +50,7 @@ export function extractContent(dom: JSDOM) {
   return {
     title: article.title,
     content: markdown,
-    excerpt: article.excerpt,
+    description: article.excerpt,
   };
 }
 
