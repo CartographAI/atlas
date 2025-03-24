@@ -3,6 +3,8 @@ import { JSDOM } from "jsdom";
 import axios from "axios";
 import TurndownService from "turndown";
 import DOMPurify from "dompurify";
+import { marked } from "marked";
+import * as cheerio from "cheerio";
 
 export async function fetchAndParse(url: string): Promise<JSDOM> {
   try {
@@ -63,20 +65,20 @@ export function extractContent(dom: JSDOM) {
   };
 }
 
-export function extractLinks(dom: JSDOM): string[] {
-  const links: string[] = [];
-  const document = dom.window.document;
+interface Link {
+  title: string;
+  href: string;
+}
 
-  document.querySelectorAll("a").forEach((link) => {
-    const href = link.getAttribute("href");
+export function extractLinks(markdown: string): Link[] {
+  const links: Link[] = [];
+  const html = marked(markdown);
+  const $ = cheerio.load(html);
+
+  $("a").each((_, node) => {
+    const href = $(node).attr("href");
     if (href) {
-      try {
-        // Convert relative URLs to absolute
-        const absoluteUrl = new URL(href, dom.window.location.href).href;
-        links.push(absoluteUrl);
-      } catch (e) {
-        // Skip invalid URLs
-      }
+      links.push({ title: $(node).text(), href });
     }
   });
 
@@ -86,9 +88,10 @@ export function extractLinks(dom: JSDOM): string[] {
 async function processUrl(url: string) {
   const dom = await fetchAndParse(url);
   const result = extractContent(dom);
-  const links = extractLinks(dom);
+  const links = extractLinks(result.content);
   console.log(result);
   console.log(links);
 }
 processUrl("https://hono.dev/docs/guides/validation");
 processUrl("https://svelte.dev/docs/svelte/faq");
+processUrl("https://resend.com/docs/llms.txt");
