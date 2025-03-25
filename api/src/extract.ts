@@ -19,6 +19,12 @@ export async function fetchAndParse(url: string): Promise<{ dom: JSDOM; isHTML: 
 
     // Create a DOM from the HTML
     const dom = new JSDOM(response.data, { url });
+    if (!isHTML) {
+      if (response.data !== dom.window.document.body.innerHTML) {
+        throw new Error(`dom is changing output of markdown/text`);
+      }
+    }
+    console.log(response.data === dom.window.document.body.innerHTML);
     return { dom, isHTML };
   } catch (error) {
     throw new Error(`Failed to fetch or parse content: ${error}`);
