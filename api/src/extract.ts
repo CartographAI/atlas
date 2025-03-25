@@ -6,7 +6,7 @@ import DOMPurify from "dompurify";
 import { marked } from "marked";
 import * as cheerio from "cheerio";
 
-export async function fetchAndParse(url: string): Promise<JSDOM> {
+export async function fetchAndParse(url: string): Promise<{ dom: JSDOM; isHTML: boolean }> {
   try {
     const response = await axios.get(url, {
       headers: {
@@ -14,9 +14,12 @@ export async function fetchAndParse(url: string): Promise<JSDOM> {
       },
     });
 
+    // Check if content is HTML based on content-type header
+    const isHTML = response.headers["content-type"]?.includes("text/html") ?? false;
+
     // Create a DOM from the HTML
     const dom = new JSDOM(response.data, { url });
-    return dom;
+    return { dom, isHTML };
   } catch (error) {
     throw new Error(`Failed to fetch or parse content: ${error}`);
   }
@@ -24,15 +27,6 @@ export async function fetchAndParse(url: string): Promise<JSDOM> {
 
 export function extractContent(dom: JSDOM) {
   const document = dom.window.document;
-
-  // if no children in body, then its already in markdown format
-  if (document.body.children.length === 0) {
-    return {
-      title: "",
-      content: document.body.innerHTML,
-      description: "",
-    };
-  }
 
   // Use Readability to extract main content
   const reader = new Readability(document);
