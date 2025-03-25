@@ -84,8 +84,11 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
       slug,
     };
     await createPage(newPage);
+
+    return content;
   } catch (error) {
     console.error(`Error processing ${url}:`, error);
+    return null;
   }
 }
 
@@ -108,25 +111,33 @@ async function processDocumentation(libraryName: string, url: string) {
     const doc = existingDoc || (await getDocsByName(libraryName));
     if (!doc) throw new Error("Failed to create or retrieve doc");
 
-    // Process the initial page
-    const initialDom = await fetchAndParse(url);
-    const { content } = extractContent(initialDom);
+    // Process the initial page and get its content
+    const initialContent = await processPage(url, doc.id, baseUrl, "llms.txt");
+    if (!initialContent) {
+      throw new Error("Failed to process initial page");
+    }
 
     // Extract all links from the initial page
-    const links = extractLinks(content);
+    const links = extractLinks(initialContent);
 
-    // Process the initial page
-    await processPage(url, doc.id, baseUrl, "llms.txt");
-
-    // Process all links found in the initial page
+    // Filter unique URLs
     const processedUrls = new Set<string>();
-    for (const link of links) {
+    const uniqueLinks = links.filter((link) => {
       const cleanUrl = link.href.split("#")[0];
-      if (!processedUrls.has(cleanUrl)) {
+      if (!processedUrls.has(cleanUrl) && checkBaseUrl(cleanUrl, baseUrl)) {
         processedUrls.add(cleanUrl);
-        await processPage(cleanUrl, doc.id, baseUrl, link.title);
+        return true;
       }
-    }
+      return false;
+    });
+
+    // Process all links in parallel
+    const pageProcessingPromises = uniqueLinks.map((link) => processPage(link.href, doc.id, baseUrl, link.title));
+
+    // Wait for all pages to be processed
+    await Promise.all(pageProcessingPromises);
+
+    console.log(`Finished processing ${libraryName} documentation`);
   } catch (error) {
     console.error(`Error processing documentation for ${libraryName}:`, error);
     throw error;
