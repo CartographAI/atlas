@@ -8,7 +8,7 @@ interface LibraryUrls {
 }
 
 const libraryUrls: LibraryUrls = {
-  // hono: "https://hono.dev/llms.txt",
+  hono: "https://hono.dev/llms.txt",
   // drizzle: "https://orm.drizzle.team/llms.txt",
   // mastra: "https://mastra.ai/llms.txt",
   resend: "https://resend.com/docs/llms.txt",
@@ -155,4 +155,6 @@ async function processDocumentation(libraryName: string, url: string) {
   }
 }
 
-processDocumentation("resend", "https://resend.com/docs/llms.txt");
+for (const [name, url] of Object.entries(libraryUrls)) {
+  processDocumentation(name, url);
+}
