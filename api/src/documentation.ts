@@ -1,4 +1,4 @@
-import { createDoc, getDocsByName } from "./database/docsRepository";
+import { createDoc, deleteDocById, getDocsByName } from "./database/docsRepository";
 import { createPage } from "./database/pagesRepository";
 import { NewDoc, NewPage } from "./types";
 import { fetchURL, extractLinks, extractContent } from "./extract";
@@ -104,17 +104,19 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
 
 async function processDocumentation(libraryName: string, url: string) {
   try {
-    // Check if doc already exists
+    // Delete doc if it already exists
     let doc = await getDocsByName(libraryName);
-    if (!doc) {
-      // Create new doc entry
-      const newDoc: NewDoc = {
-        name: libraryName,
-        description: null,
-        sourceUrl: url,
-      };
-      doc = await createDoc(newDoc);
+    if (doc) {
+      await deleteDocById(doc.id);
     }
+
+    // Create new doc entry
+    const newDoc: NewDoc = {
+      name: libraryName,
+      description: null,
+      sourceUrl: url,
+    };
+    doc = await createDoc(newDoc);
 
     const baseUrl = url.split("/").filter(Boolean).slice(0, -1).join("/");
 
