@@ -7,8 +7,8 @@ steps:
       docker build
       -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/cartograph-docker/atlas-api:master
       -t asia-southeast1-docker.pkg.dev/$PROJECT_ID/cartograph-docker/atlas-api:git-$SHORT_SHA
-      -f atlas-api/Dockerfile
-      atlas-api
+      -f api/Dockerfile
+      api
 
 # Push all the images to our Artifact Registry
 images:
