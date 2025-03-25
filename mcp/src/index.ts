@@ -6,7 +6,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, ToolSchema } from "@mode
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
-const ATLAS_BASE_URL = process.env.ATLAS_BASE_URL ?? "";
+const ATLAS_BASE_URL = `${process.env.ATLAS_BASE_URL ?? ""}/api`;
 
 const server = new Server(
   {
