@@ -65,11 +65,6 @@ function getUrlSlug(url: string, baseUrl: string): string {
 
 async function processPage(url: string, docId: number, baseUrl: string, defaultTitle: string | null = null) {
   try {
-    if (!checkBaseUrl(url, baseUrl)) {
-      console.log(`${url} not part of base of ${baseUrl}`);
-      return;
-    }
-
     let title, content, description;
 
     const { pageData, contentType } = await fetchURL(url);
@@ -91,6 +86,7 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
 
     const newPage: NewPage = {
       docId,
+      // needs to be improved in the future
       title: defaultTitle || title || "",
       description,
       sourceContent: pageData,
