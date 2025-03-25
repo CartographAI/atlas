@@ -77,14 +77,3 @@ export function extractLinks(markdown: string): Link[] {
 
   return links;
 }
-
-async function processUrl(url: string) {
-  const dom = await fetchAndParse(url);
-  const result = extractContent(dom);
-  const links = extractLinks(result.content);
-  console.log(result);
-  console.log(links);
-}
-processUrl("https://hono.dev/docs/guides/validation");
-processUrl("https://svelte.dev/docs/svelte/faq");
-processUrl("https://resend.com/docs/llms.txt");
