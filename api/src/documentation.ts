@@ -1,7 +1,7 @@
 import { createDoc, getDocsByName } from "./database/docsRepository";
 import { createPage } from "./database/pagesRepository";
 import { NewDoc, NewPage } from "./types";
-import { fetchAndParse, extractLinks, extractContent } from "./extract";
+import { fetchURL, extractLinks, extractContent } from "./extract";
 
 interface LibraryUrls {
   [key: string]: string;
@@ -72,15 +72,18 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
 
     let title, content, description;
 
-    const { dom, isHTML } = await fetchAndParse(url);
-    if (isHTML) {
-      const extracted = extractContent(dom);
+    const { pageData, contentType } = await fetchURL(url);
+
+    // check if pageData is HTML or already text/markdown
+    // if HTML, extract the content from it
+    if (contentType.includes("text/html")) {
+      const extracted = extractContent(pageData);
       title = extracted.title;
       content = extracted.content;
       description = extracted.description;
     } else {
       title = "";
-      content = dom.window.document.body.innerHTML;
+      content = pageData;
       description = "";
     }
 
@@ -90,7 +93,7 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
       docId,
       title: defaultTitle || title || "",
       description,
-      sourceContent: dom.window.document.body.innerHTML,
+      sourceContent: pageData,
       processedContent: content,
       slug,
     };
