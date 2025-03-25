@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",
-    "db:typegen": "kysely-codegen --include-pattern='public.*' --camel-case --out-file src/database/db.d.ts"
+    "db:typegen": "kysely-codegen --include-pattern='atlas.*' --camel-case --out-file src/database/db.d.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",

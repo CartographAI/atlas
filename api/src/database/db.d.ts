@@ -11,7 +11,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export interface Docs {
+export interface AtlasDocs {
   createdAt: Generated<Timestamp>;
   description: string | null;
   id: Generated<number>;
@@ -20,7 +20,7 @@ export interface Docs {
   updatedAt: Generated<Timestamp>;
 }
 
-export interface Pages {
+export interface AtlasPages {
   createdAt: Generated<Timestamp>;
   description: string | null;
   docId: number;
@@ -33,6 +33,6 @@ export interface Pages {
 }
 
 export interface DB {
-  docs: Docs;
-  pages: Pages;
+  "atlas.docs": AtlasDocs;
+  "atlas.pages": AtlasPages;
 }
