@@ -70,8 +70,19 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
       return;
     }
 
-    const dom = await fetchAndParse(url);
-    const { title, content, description } = extractContent(dom);
+    let title, content, description;
+
+    const { dom, isHTML } = await fetchAndParse(url);
+    if (isHTML) {
+      const extracted = extractContent(dom);
+      title = extracted.title;
+      content = extracted.content;
+      description = extracted.description;
+    } else {
+      title = "";
+      content = dom.window.document.body.innerHTML;
+      description = "";
+    }
 
     const slug = getUrlSlug(url, baseUrl);
 
