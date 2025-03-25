@@ -109,21 +109,18 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
 async function processDocumentation(libraryName: string, url: string) {
   try {
     // Check if doc already exists
-    const existingDoc = await getDocsByName(libraryName);
-    if (!existingDoc) {
+    let doc = await getDocsByName(libraryName);
+    if (!doc) {
       // Create new doc entry
       const newDoc: NewDoc = {
         name: libraryName,
         description: null,
         sourceUrl: url,
       };
-      await createDoc(newDoc);
+      doc = await createDoc(newDoc);
     }
 
     const baseUrl = url.split("/").filter(Boolean).slice(0, -1).join("/");
-
-    const doc = existingDoc || (await getDocsByName(libraryName));
-    if (!doc) throw new Error("Failed to create or retrieve doc");
 
     // Process the initial page and get its content
     const initialContent = await processPage(url, doc.id, baseUrl, "llms.txt");
