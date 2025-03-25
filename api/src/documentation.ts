@@ -8,10 +8,10 @@ interface LibraryUrls {
 }
 
 const libraryUrls: LibraryUrls = {
-  hono: "https://hono.dev/llms.txt",
-  // drizzle: "https://orm.drizzle.team/llms.txt",
-  // mastra: "https://mastra.ai/llms.txt",
-  resend: "https://resend.com/docs/llms.txt",
+  Hono: "https://hono.dev/llms.txt",
+  Drizzle: "https://orm.drizzle.team/llms.txt",
+  Mastra: "https://mastra.ai/llms.txt",
+  Resend: "https://resend.com/docs/llms.txt",
 };
 
 function checkBaseUrl(url: string, baseUrl: string): Boolean {
