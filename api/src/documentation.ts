@@ -63,7 +63,13 @@ function getUrlSlug(url: string, baseUrl: string): string {
   }
 }
 
-async function processPage(url: string, docId: number, baseUrl: string, defaultTitle: string | null = null) {
+async function processPage(
+  url: string,
+  docId: number,
+  baseUrl: string,
+  defaultTitle: string | null = null,
+  defaultDescription: string | null = null,
+) {
   try {
     let title, content, description;
 
@@ -88,7 +94,7 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
       docId,
       // needs to be improved in the future
       title: defaultTitle || title || "",
-      description,
+      description: defaultDescription || description,
       sourceContent: pageData,
       processedContent: content,
       slug,
@@ -141,7 +147,9 @@ async function processDocumentation(libraryName: string, url: string) {
     });
 
     // Process all links in parallel
-    const pageProcessingPromises = uniqueLinks.map((link) => processPage(link.href, doc.id, baseUrl, link.title));
+    const pageProcessingPromises = uniqueLinks.map((link) =>
+      processPage(link.href, doc.id, baseUrl, link.title, link.description),
+    );
 
     // Wait for all pages to be processed
     await Promise.all(pageProcessingPromises);
