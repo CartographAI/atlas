@@ -54,7 +54,7 @@ export function extractContent(pageData: string) {
   return {
     title: article.title,
     content: markdown,
-    description: article.excerpt,
+    description: "",
   };
 }
 
