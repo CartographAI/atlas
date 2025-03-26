@@ -61,17 +61,30 @@ export function extractContent(pageData: string) {
 interface Link {
   title: string;
   href: string;
+  description: string;
 }
 
-export function extractLinks(markdown: string): Link[] {
+export function extractLinksFromLlmsTxt(markdown: string): Link[] {
   const links: Link[] = [];
   const html = marked(markdown);
   const $ = cheerio.load(html);
 
-  $("a").each((_, node) => {
+  $("li a").each((_, node) => {
     const href = $(node).attr("href");
     if (href) {
-      links.push({ title: $(node).text(), href });
+      let description = "";
+
+      const title = $(node).text();
+      const listItemText = $(node).parent().text();
+      const listItemDescription = listItemText.replace(title, "");
+
+      // Check if there's a colon at the beginning
+      if (listItemDescription.indexOf(":") === 0) {
+        // Extract the text after the colon and trim it
+        description = listItemDescription.substring(1).trim();
+      }
+
+      links.push({ title: $(node).text(), href, description });
     }
   });
 

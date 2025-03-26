@@ -1,7 +1,7 @@
 import { createDoc, deleteDocById, getDocsByName } from "./database/docsRepository";
 import { createPage } from "./database/pagesRepository";
 import { NewDoc, NewPage } from "./types";
-import { fetchURL, extractLinks, extractContent, extractDescription } from "./extract";
+import { fetchURL, extractLinksFromLlmsTxt, extractContent, extractDescription } from "./extract";
 
 interface LibraryUrls {
   [key: string]: string;
@@ -127,7 +127,7 @@ async function processDocumentation(libraryName: string, url: string) {
     }
 
     // Extract all links from the initial page
-    const links = extractLinks(initialContent);
+    const links = extractLinksFromLlmsTxt(initialContent);
 
     // Filter unique URLs
     const processedUrls = new Set<string>();
