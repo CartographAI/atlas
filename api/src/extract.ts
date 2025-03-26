@@ -84,7 +84,7 @@ export function extractLinksFromLlmsTxt(markdown: string): Link[] {
         description = listItemDescription.substring(1).trim();
       }
 
-      links.push({ title: $(node).text(), href, description });
+      links.push({ title, href, description });
     }
   });
 
