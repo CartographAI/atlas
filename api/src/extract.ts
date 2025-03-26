@@ -93,8 +93,10 @@ export function extractLinksFromLlmsTxt(markdown: string): Link[] {
 
 export function extractDescription(markdown: string): string | null {
   // Match content between > and the next newline
+  // only if its near the top
+  const firstLines = markdown.split("\n").slice(0, 10).join("\n");
   const blockquoteRegex = /^>\s*(.+?)$/m;
-  const match = markdown.match(blockquoteRegex);
+  const match = firstLines.match(blockquoteRegex);
 
   if (match && match[1]) {
     // Return the captured content (without the > symbol and leading/trailing whitespace)
