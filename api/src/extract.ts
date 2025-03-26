@@ -77,3 +77,16 @@ export function extractLinks(markdown: string): Link[] {
 
   return links;
 }
+
+export function extractDescription(markdown: string): string | null {
+  // Match content between > and the next newline
+  const blockquoteRegex = /^>\s*(.+?)$/m;
+  const match = markdown.match(blockquoteRegex);
+
+  if (match && match[1]) {
+    // Return the captured content (without the > symbol and leading/trailing whitespace)
+    return match[1].trim();
+  }
+
+  return null;
+}

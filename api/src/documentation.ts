@@ -1,7 +1,7 @@
 import { createDoc, deleteDocById, getDocsByName } from "./database/docsRepository";
 import { createPage } from "./database/pagesRepository";
 import { NewDoc, NewPage } from "./types";
-import { fetchURL, extractLinks, extractContent } from "./extract";
+import { fetchURL, extractLinks, extractContent, extractDescription } from "./extract";
 
 interface LibraryUrls {
   [key: string]: string;
@@ -79,7 +79,7 @@ async function processPage(url: string, docId: number, baseUrl: string, defaultT
     } else {
       title = "";
       content = pageData;
-      description = "";
+      description = extractDescription(pageData);
     }
 
     const slug = getUrlSlug(url, baseUrl);
