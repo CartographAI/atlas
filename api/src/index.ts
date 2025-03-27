@@ -38,7 +38,7 @@ api.get("/docs/:docName", zValidator("param", z.object({ docName: z.coerce.strin
 });
 
 // GET all pages for docs by docName
-api.get("/docs/:docName/pages/", zValidator("param", z.object({ docName: z.coerce.string() })), async (c) => {
+api.get("/docs/:docName/pages", zValidator("param", z.object({ docName: z.coerce.string() })), async (c) => {
   try {
     const { docName } = c.req.valid("param");
 
