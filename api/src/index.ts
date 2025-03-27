@@ -86,6 +86,29 @@ api.get(
   },
 );
 
+// GET search pages in a doc
+api.get(
+  "/docs/:docName/search",
+  zValidator("param", z.object({ docName: z.coerce.string() })),
+  zValidator("query", z.object({ q: z.string() })),
+  async (c) => {
+    try {
+      const { docName } = c.req.valid("param");
+      const { q: searchQuery } = c.req.valid("query");
+
+      // Check if doc exists
+      const docExists = await getDocsByName(docName);
+      if (!docExists) {
+        return c.json({ error: "Doc not found" }, 404);
+      }
+
+      return c.json([]);
+    } catch (error) {
+      return c.json({ error: "Failed to search pages" }, 500);
+    }
+  },
+);
+
 const app = new Hono();
 app.route("/api", api);
 
