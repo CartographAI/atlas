@@ -1,7 +1,7 @@
 import { createDoc, deleteDocById, getDocsByName } from "./database/docsRepository";
 import { createPage } from "./database/pagesRepository";
 import { NewDoc, NewPage } from "./types";
-import { fetchURL, extractLinksFromLlmsTxt, extractContent, extractDescription } from "./extract";
+import { fetchURL, extractLinksFromLlmsTxt, extractContent, extractDescription, Link } from "./extract";
 
 interface LibraryUrls {
   [key: string]: string;
@@ -135,9 +135,22 @@ async function processDocumentation(libraryName: string, url: string) {
     // Extract all links from the initial page
     const links = extractLinksFromLlmsTxt(initialContent);
 
-    // Filter unique URLs
     const processedUrls = new Set<string>();
-    const uniqueLinks = links.filter((link) => {
+
+    // Handle relative URLs
+    const absoluteLinks: Link[] = links
+      .filter((link) => !link.href.startsWith("#")) // filter relative subheading links
+      .map((link) => {
+        try {
+          return { title: link.title, description: link.description, href: new URL(link.href, url).href }; // Resolve relative URLs
+        } catch (e) {
+          return null; // Invalid URL
+        }
+      })
+      .filter((link): link is Link => link !== null);
+
+    // Filter unique URLs
+    const uniqueLinks = absoluteLinks.filter((link) => {
       const cleanUrl = link.href.split("#")[0];
       if (!processedUrls.has(cleanUrl) && checkBaseUrl(cleanUrl, baseUrl)) {
         processedUrls.add(cleanUrl);
