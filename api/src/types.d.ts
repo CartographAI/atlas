@@ -19,6 +19,8 @@ export type PageMinimalResponse = {
   content: string;
 };
 
-export type PageMinimalWithScore = PageMinimalResponse & {
+export type PageSearchResultWithScore = {
+  title: string;
+  description: string | null;
   relevanceScore: number;
 };
