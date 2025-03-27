@@ -12,6 +12,20 @@ const libraryUrls: LibraryUrls = {
   Drizzle: "https://orm.drizzle.team/llms.txt",
   Mastra: "https://mastra.ai/llms.txt",
   Resend: "https://resend.com/docs/llms.txt",
+  "Langgraph-py": "https://langchain-ai.github.io/langgraph/llms.txt",
+  "Langgraph-js": "https://langchain-ai.github.io/langgraphjs/llms.txt",
+  Fireworks: "https://docs.fireworks.ai/llms.txt",
+  CrewAI: "https://docs.crewai.com/llms.txt",
+  Stripe: "https://docs.stripe.com/llms.txt",
+  Zapier: "https://docs.zapier.com/llms.txt",
+  X: "https://docs.x.com/llms.txt",
+  Bun: "https://bun.sh/llms.txt",
+  ElevenLabs: "https://elevenlabs.io/docs/llms.txt",
+  Prisma: "https://www.prisma.io/docs/llms.txt",
+  ChakraUI: "https://chakra-ui.com/llms.txt",
+  ModelContextProtocol: "https://modelcontextprotocol.io/llms.txt",
+  "Trigger.dev": "https://trigger.dev/docs/llms.txt",
+  "ast-grep": "https://ast-grep.github.io/llms.txt",
 };
 
 function checkBaseUrl(url: string, baseUrl: string): Boolean {
