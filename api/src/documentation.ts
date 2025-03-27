@@ -107,10 +107,10 @@ async function processPage(
     const newPage: NewPage = {
       docId,
       // needs to be improved in the future
-      title: defaultTitle || title || "",
-      description: defaultDescription || description,
+      title: (defaultTitle || title || "").trim(),
+      description: (defaultDescription || description)?.trim(),
       sourceContent: pageData,
-      processedContent: content,
+      processedContent: content.trim(),
       slug,
     };
     await createPage(newPage);
