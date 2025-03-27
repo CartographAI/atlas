@@ -1,12 +1,8 @@
-import type { NewPage, Page, PageMinimalResponse, UpdatePage } from "../types";
+import type { NewPage, Page, PageMinimalResponse, PageMinimalWithScore, UpdatePage } from "../types";
 import dbClient from "./kyselyClient";
 import { sql } from "kysely";
 
 const pagesTable = "atlas.pages";
-
-type PageWithScore = Page & {
-  relevanceScore: number;
-};
 
 export async function getPagesByDocId(docId: number): Promise<Page[]> {
   return dbClient.selectFrom(pagesTable).selectAll().where("docId", "=", docId).execute();
@@ -74,7 +70,7 @@ export async function searchPagesWeighted(
   docId: number,
   searchTerms: string,
   limit: number = 20, // Default limit
-): Promise<PageWithScore[]> {
+): Promise<PageMinimalWithScore[]> {
   // Define the weighted tsvector expression using sql fragments.
   // This MUST exactly match the expression used in the CREATE INDEX statement.
   const weightedTsVector = sql`(
@@ -89,7 +85,7 @@ export async function searchPagesWeighted(
 
   const results = await dbClient
     .selectFrom(pagesTable)
-    .select(["id", "docId", "title", "description", "slug", "createdAt", "updatedAt"])
+    .select(["title", "description", "processedContent as content"])
     .select(
       // Calculate and select the relevance score using ts_rank_cd
       sql<number>`ts_rank_cd(${weightedTsVector}, ${tsQuery})`.as("relevanceScore"),
@@ -106,5 +102,5 @@ export async function searchPagesWeighted(
   return results.map((row) => ({
     ...row,
     relevanceScore: Number(row.relevanceScore), // Ensure score is a number
-  })) as PageWithScore[];
+  })) as PageMinimalWithScore[];
 }

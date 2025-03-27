@@ -18,3 +18,7 @@ export type PageMinimalResponse = {
   description: string | null;
   content: string;
 };
+
+export type PageMinimalWithScore = PageMinimalResponse & {
+  relevanceScore: number;
+};
