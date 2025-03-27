@@ -1,4 +1,4 @@
-import type { Doc, NewDoc, UpdateDoc } from "../types";
+import type { Doc, DocMinimalResponse, NewDoc, UpdateDoc } from "../types";
 import dbClient from "./kyselyClient";
 
 const docsTable = "atlas.docs";
@@ -7,12 +7,24 @@ export async function getDocs(): Promise<Doc[]> {
   return dbClient.selectFrom(docsTable).selectAll().execute();
 }
 
+export async function getDocsMinimal(): Promise<DocMinimalResponse[]> {
+  return dbClient.selectFrom(docsTable).select(["name", "description", "sourceUrl"]).execute();
+}
+
 export async function getDocsById(id: number): Promise<Doc | undefined> {
   return dbClient.selectFrom(docsTable).selectAll().where("id", "=", id).executeTakeFirst();
 }
 
 export async function getDocsByName(name: string): Promise<Doc | undefined> {
   return dbClient.selectFrom(docsTable).selectAll().where("name", "=", name).executeTakeFirst();
+}
+
+export async function getDocsByNameMinimal(name: string): Promise<DocMinimalResponse | undefined> {
+  return dbClient
+    .selectFrom(docsTable)
+    .select(["name", "description", "sourceUrl"])
+    .where("name", "=", name)
+    .executeTakeFirst();
 }
 
 export async function createDoc(doc: NewDoc): Promise<Doc> {

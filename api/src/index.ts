@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { getDocs, getDocsByName } from "./database/docsRepository";
-import { getPageByName, getPagesByDocId, searchPagesWeighted } from "./database/pagesRepository";
+import { getDocsMinimal, getDocsByName, getDocsByNameMinimal } from "./database/docsRepository";
+import { getPageByNameMinimal, getPagesByDocIdMinimal, searchPagesWeighted } from "./database/pagesRepository";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
@@ -13,7 +13,7 @@ api.get("/health", (c) => {
 // GET all docs
 api.get("/docs", async (c) => {
   try {
-    const docs = await getDocs();
+    const docs = await getDocsMinimal();
     return c.json(docs);
   } catch (error) {
     return c.json({ error: "Failed to fetch docs" }, 500);
@@ -25,7 +25,7 @@ api.get("/docs/:docName", zValidator("param", z.object({ docName: z.coerce.strin
   try {
     const { docName } = c.req.valid("param");
 
-    const doc = await getDocsByName(docName);
+    const doc = await getDocsByNameMinimal(docName);
 
     if (!doc) {
       return c.json({ error: "Doc not found" }, 404);
@@ -47,15 +47,10 @@ api.get("/docs/:docName/pages/", zValidator("param", z.object({ docName: z.coerc
       return c.json({ error: "Doc not found" }, 404);
     }
 
-    const page = await getPagesByDocId(docExists.id);
-
-    if (!page) {
-      return c.json({ error: "Page not found" }, 404);
-    }
-
-    return c.json(page);
+    const pages = await getPagesByDocIdMinimal(docExists.id);
+    return c.json(pages);
   } catch (error) {
-    return c.json({ error: "Failed to fetch page" }, 500);
+    return c.json({ error: "Failed to fetch pages" }, 500);
   }
 });
 
@@ -73,7 +68,7 @@ api.get(
         return c.json({ error: "Doc not found" }, 404);
       }
 
-      const page = await getPageByName(docExists.id, pageName);
+      const page = await getPageByNameMinimal(docExists.id, pageName);
 
       if (!page) {
         return c.json({ error: "Page not found" }, 404);
