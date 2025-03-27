@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { getDocs, getDocsByName } from "./database/docsRepository";
-import { getPageByName, getPagesByDocId } from "./database/pagesRepository";
+import { getPageByName, getPagesByDocId, searchPagesWeighted } from "./database/pagesRepository";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
@@ -102,7 +102,9 @@ api.get(
         return c.json({ error: "Doc not found" }, 404);
       }
 
-      return c.json([]);
+      const searchResults = await searchPagesWeighted(docExists.id, searchQuery);
+
+      return c.json(searchResults);
     } catch (error) {
       return c.json({ error: "Failed to search pages" }, 500);
     }
