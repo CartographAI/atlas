@@ -1,7 +1,7 @@
 import { createDoc, deleteDocById, getDocsByName } from "./database/docsRepository";
 import { createPage } from "./database/pagesRepository";
-import { NewDoc, NewPage } from "./types";
-import { fetchURL, extractLinksFromLlmsTxt, extractContent, extractDescription, Link } from "./extract";
+import type { NewDoc, NewPage } from "./types";
+import { fetchURL, extractLinksFromLlmsTxt, extractContent, extractDescription, type Link } from "./extract";
 
 interface LibraryUrls {
   [key: string]: string;
@@ -28,7 +28,7 @@ const libraryUrls: LibraryUrls = {
   "ast-grep": "https://ast-grep.github.io/llms.txt",
 };
 
-function checkBaseUrl(url: string, baseUrl: string): Boolean {
+function checkBaseUrl(url: string, baseUrl: string): boolean {
   try {
     const urlObj = new URL(url);
     const baseUrlObj = new URL(baseUrl);
@@ -68,7 +68,7 @@ function getUrlSlug(url: string, baseUrl: string): string {
     }
 
     // Join remaining path segments with /
-    let slug = relativePath.join("/");
+    const slug = relativePath.join("/");
 
     return slug;
   } catch (error) {

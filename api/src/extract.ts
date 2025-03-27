@@ -66,7 +66,7 @@ export interface Link {
 
 export function extractLinksFromLlmsTxt(markdown: string): Link[] {
   const links: Link[] = [];
-  const html = marked(markdown);
+  const html = marked(markdown) as string;
   const $ = cheerio.load(html);
 
   $("li a").each((_, node) => {
@@ -98,7 +98,7 @@ export function extractDescription(markdown: string): string | null {
   const blockquoteRegex = /^>\s*(.+?)$/m;
   const match = firstLines.match(blockquoteRegex);
 
-  if (match && match[1]) {
+  if (match?.[1]) {
     // Return the captured content (without the > symbol and leading/trailing whitespace)
     return match[1].trim();
   }
