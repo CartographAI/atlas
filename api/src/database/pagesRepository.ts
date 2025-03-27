@@ -1,4 +1,4 @@
-import type { NewPage, Page, UpdatePage } from "../types";
+import type { NewPage, Page, PageMinimalResponse, UpdatePage } from "../types";
 import dbClient from "./kyselyClient";
 import { sql } from "kysely";
 
@@ -10,6 +10,14 @@ type PageWithScore = Page & {
 
 export async function getPagesByDocId(docId: number): Promise<Page[]> {
   return dbClient.selectFrom(pagesTable).selectAll().where("docId", "=", docId).execute();
+}
+
+export async function getPagesByDocIdMinimal(docId: number): Promise<PageMinimalResponse[]> {
+  return dbClient
+    .selectFrom(pagesTable)
+    .select(["title", "description", "processedContent as content"])
+    .where("docId", "=", docId)
+    .execute();
 }
 
 export async function getPageById(docId: number, pageId: number): Promise<Page | undefined> {
@@ -26,7 +34,16 @@ export async function getPageByName(docId: number, pageName: string): Promise<Pa
     .selectFrom(pagesTable)
     .selectAll()
     .where("docId", "=", docId)
-    .where("slug", "=", pageName)
+    .where("title", "=", pageName)
+    .executeTakeFirst();
+}
+
+export async function getPageByNameMinimal(docId: number, pageName: string): Promise<PageMinimalResponse | undefined> {
+  return dbClient
+    .selectFrom(pagesTable)
+    .select(["title", "description", "processedContent as content"])
+    .where("docId", "=", docId)
+    .where("title", "=", pageName)
     .executeTakeFirst();
 }
 

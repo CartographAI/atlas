@@ -11,3 +11,10 @@ export type UpdateDoc = Updateable<AtlasDocs>;
 export type Page = Selectable<AtlasPages>;
 export type NewPage = Insertable<AtlasPages>;
 export type UpdatePage = Updateable<AtlasPages>;
+
+export type DocMinimalResponse = Pick<Doc, "name" | "description" | "sourceUrl">;
+export type PageMinimalResponse = {
+  title: string;
+  description: string | null;
+  content: string;
+};
