@@ -58,7 +58,7 @@ export function extractContent(pageData: string) {
   };
 }
 
-interface Link {
+export interface Link {
   title: string;
   href: string;
   description: string;
