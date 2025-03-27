@@ -52,6 +52,19 @@ const GetPageSchema = z.object({
     ),
 });
 
+const SearchPageSchema = z.object({
+  docName: z
+    .string()
+    .describe(
+      "The unique identifier or name of the documentation set you want to explore. Get this from list_docs first if you're unsure.",
+    ),
+  searchQuery: z
+    .string()
+    .describe(
+      "The search terms or phrase to look for within the documentation. This can include keywords, function names, concepts, or any text you want to find in the documentation.",
+    ),
+});
+
 const ToolInputSchema = ToolSchema.shape.inputSchema;
 type ToolInput = z.infer<typeof ToolInputSchema>;
 
@@ -90,6 +103,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description:
           "Retrieves a specific documentation page's content. Use this when you already know which page contains the information you need, or after using search to identify relevant pages. This provides detailed information about a specific topic, function, or feature.",
         inputSchema: zodToJsonSchema(GetPageSchema) as ToolInput,
+      },
+      {
+        name: "search_page",
+        description:
+          "Searches through a documentation set for pages matching a specific query. Use this when you need to find relevant pages or sections within a documentation set that contain specific keywords, concepts, or topics. Returns a list of matching pages with their relevance scores and descriptions.",
+        inputSchema: zodToJsonSchema(SearchPageSchema) as ToolInput,
       },
     ],
   };
@@ -148,6 +167,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const { docName, pageName } = parsedArgs.data;
         const page = await fetchApi(`/docs/${docName}/pages/${pageName}`);
+
+        return {
+          content: [{ type: "text", text: JSON.stringify(page, null, 2) }],
+        };
+      }
+      case "search_page": {
+        const parsedArgs = SearchPageSchema.safeParse(args);
+        if (!parsedArgs.success) {
+          throw new Error(`Invalid arguments: ${parsedArgs.error}`);
+        }
+
+        const { docName, searchQuery } = parsedArgs.data;
+        const page = await fetchApi(`/docs/${docName}/search?q=${searchQuery}`);
 
         return {
           content: [{ type: "text", text: JSON.stringify(page, null, 2) }],
