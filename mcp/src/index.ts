@@ -45,10 +45,10 @@ const GetPageSchema = z.object({
     .describe(
       "The unique identifier or name of the documentation set you want to explore. Get this from list_docs first if you're unsure.",
     ),
-  pageSlug: z
+  pagePath: z
     .string()
     .describe(
-      "The root-relative path (slug) of the specific documentation page (e.g., '/guides/getting-started', '/api/authentication'). This is typically obtained from search results or documentation structure.",
+      "The root-relative path of the specific documentation page (e.g., '/guides/getting-started', '/api/authentication'). This is typically obtained from search results or documentation structure.",
     ),
 });
 
@@ -101,13 +101,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "get_page",
         description:
-          "Retrieves a specific documentation page's content using its slug (root-relative path). Use this when you already know which page contains the information you need, or after using search to identify relevant pages. This provides detailed information about a specific topic, function, or feature.",
+          "Retrieves a specific documentation page's content using its relative path. Use this when you already know which page contains the information you need, or after using search to identify relevant pages. This provides detailed information about a specific topic, function, or feature.",
         inputSchema: zodToJsonSchema(GetPageSchema) as ToolInput,
       },
       {
         name: "search_page",
         description:
-          "Searches through a documentation set for pages matching a specific query. Use this when you need to find relevant pages or sections within a documentation set that contain specific keywords, concepts, or topics. Returns a list of matching pages with their relevance scores, slugs, and descriptions.",
+          "Searches through a documentation set for pages matching a specific query. Use this when you need to find relevant pages or sections within a documentation set that contain specific keywords, concepts, or topics. Returns a list of matching pages with their relevance scores, paths, and descriptions.",
         inputSchema: zodToJsonSchema(SearchPageSchema) as ToolInput,
       },
     ],
@@ -165,8 +165,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new Error(`Invalid arguments: ${parsedArgs.error}`);
         }
 
-        const { docName, pageSlug } = parsedArgs.data;
-        const page = await fetchApi(`/docs/${docName}/pages/${pageSlug}`);
+        const { docName, pagePath } = parsedArgs.data;
+        const page = await fetchApi(`/docs/${docName}/pages/${pagePath}`);
 
         return {
           content: [{ type: "text", text: JSON.stringify(page, null, 2) }],
