@@ -5,6 +5,7 @@ import TurndownService from "turndown";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import * as cheerio from "cheerio";
+import { checkBaseUrl } from "./url";
 
 export async function fetchURL(url: string): Promise<{ pageData: string; contentType: string }> {
   try {
@@ -104,4 +105,59 @@ export function extractDescription(markdown: string): string | null {
   }
 
   return null;
+}
+
+export function relativizeMarkdownLinks(markdown: string, baseUrl: string): string {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+  return markdown.replace(linkRegex, (match, text, url) => {
+    // The 'url' captured by the regex is the content between parentheses.
+    const processedUrl = url.trim(); // Trim whitespace just in case
+
+    try {
+      // 1. Skip non-http(s) absolute URLs (mailto:, tel:, etc.) and anchors
+      if (
+        processedUrl.startsWith("#") ||
+        (processedUrl.includes(":") && !processedUrl.startsWith("http://") && !processedUrl.startsWith("https://"))
+      ) {
+        return match; // Keep original link
+      }
+
+      // 2. Handle existing relative URLs (those not starting with http/https or a scheme)
+      if (!processedUrl.startsWith("http://") && !processedUrl.startsWith("https://")) {
+        // If it's already relative (doesn't start with /), make it root-relative
+        if (!processedUrl.startsWith("/")) {
+          return `[${text}](/${processedUrl})`;
+        }
+        // If it already starts with /, keep it as is
+        return match;
+      }
+
+      // 3. Process absolute http(s) URLs
+      const linkUrl = new URL(processedUrl);
+
+      // Check if the origin matches the site's origin
+      if (checkBaseUrl(url, baseUrl)) {
+        // Same origin: replace with root-relative path + search + hash
+        let relativePath = linkUrl.pathname;
+        // Ensure path starts with /
+        if (!relativePath.startsWith("/")) {
+          relativePath = "/" + relativePath;
+        }
+        // Append search and hash
+        relativePath += linkUrl.search + linkUrl.hash;
+
+        // Reconstruct the simplified link
+        return `[${text}](${relativePath})`;
+      } else {
+        // Different origin: keep the original absolute URL
+        return match;
+      }
+    } catch (e) {
+      // Error parsing URL (might happen with complex or malformed URLs not fully handled by regex)
+      // Keep the original link in case of error
+      console.warn(`Could not parse URL in markdown link: ${url}`, e);
+      return match;
+    }
+  });
 }

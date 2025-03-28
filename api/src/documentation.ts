@@ -1,7 +1,14 @@
 import { createDoc, deleteDocById, getDocsByName } from "./database/docsRepository";
 import { createPage } from "./database/pagesRepository";
 import type { NewDoc, NewPage } from "./types";
-import { fetchURL, extractLinksFromLlmsTxt, extractContent, extractDescription, type Link } from "./extract";
+import {
+  fetchURL,
+  extractLinksFromLlmsTxt,
+  extractContent,
+  extractDescription,
+  type Link,
+  relativizeMarkdownLinks,
+} from "./extract";
 import { checkBaseUrl, getUrlSlug } from "./url";
 
 interface LibraryUrls {
@@ -56,13 +63,15 @@ async function processPage(
 
     const slug = getUrlSlug(url, baseUrl);
 
+    const updatedContent = relativizeMarkdownLinks(content, baseUrl);
+
     const newPage: NewPage = {
       docId,
       // needs to be improved in the future
       title: (defaultTitle || title || "").trim(),
       description: (defaultDescription || description)?.trim(),
       sourceContent: pageData,
-      processedContent: content.trim(),
+      processedContent: updatedContent.trim(),
       slug,
     };
     await createPage(newPage);
