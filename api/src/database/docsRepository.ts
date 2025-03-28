@@ -16,14 +16,14 @@ export async function getDocsById(id: number): Promise<Doc | undefined> {
 }
 
 export async function getDocsByName(name: string): Promise<Doc | undefined> {
-  return dbClient.selectFrom(docsTable).selectAll().where("name", "=", name).executeTakeFirst();
+  return dbClient.selectFrom(docsTable).selectAll().where("name", "ilike", name).executeTakeFirst();
 }
 
 export async function getDocsByNameMinimal(name: string): Promise<DocMinimalResponse | undefined> {
   return dbClient
     .selectFrom(docsTable)
     .select(["name", "description", "sourceUrl"])
-    .where("name", "=", name)
+    .where("name", "ilike", name)
     .executeTakeFirst();
 }
 
