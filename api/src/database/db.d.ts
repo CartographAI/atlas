@@ -25,8 +25,8 @@ export interface AtlasPages {
   description: string | null;
   docId: number;
   id: Generated<number>;
+  path: string;
   processedContent: string;
-  slug: string;
   sourceContent: string | null;
   title: string;
   updatedAt: Generated<Timestamp>;
