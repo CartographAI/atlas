@@ -5,7 +5,7 @@ import TurndownService from "turndown";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import * as cheerio from "cheerio";
-import { checkBaseUrl } from "./url";
+import { checkBaseUrl, getUrlPath } from "./url";
 
 export async function fetchURL(url: string): Promise<{ pageData: string; contentType: string }> {
   try {
@@ -133,21 +133,15 @@ export function relativizeMarkdownLinks(markdown: string, baseUrl: string): stri
         return match;
       }
 
-      // 3. Process absolute http(s) URLs
-      const linkUrl = new URL(processedUrl);
-
       // Check if the origin matches the site's origin
       if (checkBaseUrl(url, baseUrl)) {
-        // Same origin: replace with root-relative path + search + hash
-        let relativePath = linkUrl.pathname;
+        // replace with relative path
+        let relativePath = getUrlPath(url, baseUrl);
         // Ensure path starts with /
         if (!relativePath.startsWith("/")) {
           relativePath = "/" + relativePath;
         }
-        // Append search and hash
-        relativePath += linkUrl.search + linkUrl.hash;
 
-        // Reconstruct the simplified link
         return `[${text}](${relativePath})`;
       } else {
         // Different origin: keep the original absolute URL
