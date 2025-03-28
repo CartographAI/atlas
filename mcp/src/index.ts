@@ -179,10 +179,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
 
         const { docName, searchQuery } = parsedArgs.data;
-        const page = await fetchApi(`/docs/${docName}/search?q=${searchQuery}`);
+        const results = await fetchApi(`/docs/${docName}/search?q=${searchQuery}`);
 
         return {
-          content: [{ type: "text", text: JSON.stringify(page, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };
       }
 
