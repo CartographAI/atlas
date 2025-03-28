@@ -20,7 +20,7 @@ export function checkBaseUrl(url: string, baseUrl: string): boolean {
   }
 }
 
-export function getUrlSlug(url: string, baseUrl: string): string {
+export function getUrlPath(url: string, baseUrl: string): string {
   try {
     const urlObj = new URL(url);
     const baseUrlObj = new URL(baseUrl);
@@ -38,11 +38,11 @@ export function getUrlSlug(url: string, baseUrl: string): string {
     }
 
     // Join remaining path segments with /
-    const slug = relativePath.join("/");
+    const path = relativePath.join("/");
 
-    return slug;
+    return path;
   } catch (error) {
-    // Return a default slug if URL parsing fails
+    // Return a default path if URL parsing fails
     return "invalid-url";
   }
 }

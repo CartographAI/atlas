@@ -9,7 +9,7 @@ import {
   type Link,
   relativizeMarkdownLinks,
 } from "./extract";
-import { checkBaseUrl, getUrlSlug } from "./url";
+import { checkBaseUrl, getUrlPath } from "./url";
 
 interface LibraryUrls {
   [key: string]: string;
@@ -61,7 +61,7 @@ async function processPage(
       description = extractDescription(pageData);
     }
 
-    const slug = getUrlSlug(url, baseUrl);
+    const path = getUrlPath(url, baseUrl);
 
     const updatedContent = relativizeMarkdownLinks(content, baseUrl);
 
@@ -72,7 +72,7 @@ async function processPage(
       description: (defaultDescription || description)?.trim(),
       sourceContent: pageData,
       processedContent: updatedContent.trim(),
-      slug,
+      path,
     };
     await createPage(newPage);
 
