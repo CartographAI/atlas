@@ -20,7 +20,11 @@ export function checkBaseUrl(url: string, baseUrl: string): boolean {
   }
 }
 
-export function getUrlPath(url: string, baseUrl: string): string {
+export function getUrlPath(url: string, baseUrl: string): string | null {
+  // Return null for invalid cases
+  if (!checkBaseUrl(url, baseUrl)) {
+    return null;
+  }
   try {
     const urlObj = new URL(url);
     const baseUrlObj = new URL(baseUrl);
@@ -43,6 +47,6 @@ export function getUrlPath(url: string, baseUrl: string): string {
     return path;
   } catch (error) {
     // Return a default path if URL parsing fails
-    return "invalid-url";
+    return null;
   }
 }

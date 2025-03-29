@@ -63,6 +63,11 @@ async function processPage(
 
     const path = getUrlPath(url, baseUrl);
 
+    if (path === null) {
+      // this is unexpected, since we already did a checkBaseUrl in processDocumentation to filter
+      throw new Error(`path for ${url} and ${baseUrl} was null`);
+    }
+
     const updatedContent = relativizeMarkdownLinks(content, baseUrl);
 
     const newPage: NewPage = {

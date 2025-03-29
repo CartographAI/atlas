@@ -5,7 +5,7 @@ import TurndownService from "turndown";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import * as cheerio from "cheerio";
-import { checkBaseUrl, getUrlPath } from "./url";
+import { getUrlPath } from "./url";
 
 export async function fetchURL(url: string): Promise<{ pageData: string; contentType: string }> {
   try {
@@ -133,10 +133,9 @@ export function relativizeMarkdownLinks(markdown: string, baseUrl: string): stri
         return match;
       }
 
-      // Check if the origin matches the site's origin
-      if (checkBaseUrl(url, baseUrl)) {
-        // replace with relative path
-        let relativePath = getUrlPath(url, baseUrl);
+      // Directly call getUrlPath. It returns null (it does check for checkBaseUrl) if base doesn't match or on error.
+      let relativePath = getUrlPath(processedUrl, baseUrl);
+      if (relativePath !== null) {
         // Ensure path starts with /
         if (!relativePath.startsWith("/")) {
           relativePath = "/" + relativePath;

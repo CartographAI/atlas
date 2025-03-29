@@ -91,11 +91,10 @@ describe("url.ts", () => {
     });
 
     it('should return "invalid-url" for invalid inputs', () => {
-      expect(getUrlPath("invalid-url", baseUrl)).toBe("invalid-url");
-      expect(getUrlPath("https://example.com/docs/v1/page", "invalid-base")).toBe("invalid-url");
-      // Note: It doesn't check if the URL is *actually* under the base, it just calculates based on path segments
-      expect(getUrlPath("https://anotherexample.com/unrelated", baseUrl)).toBe(""); // This might be unexpected but is how the function works
-      expect(getUrlPath("https://example.com/other", baseUrl)).toBe(""); // Also potentially unexpected
+      expect(getUrlPath("invalid-url", baseUrl)).toBe(null);
+      expect(getUrlPath("https://example.com/docs/v1/page", "invalid-base")).toBe(null);
+      expect(getUrlPath("https://anotherexample.com/unrelated", baseUrl)).toBe(null);
+      expect(getUrlPath("https://example.com/other", baseUrl)).toBe(null);
     });
   });
 });
