@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { getDocsMinimal, getDocsByName, getDocsByNameMinimal } from "./database/docsRepository";
-import { getPageByNameMinimal, getPagesByDocIdMinimal, searchPagesWeighted } from "./database/pagesRepository";
+import { getPageByPathMinimal, getPagesByDocIdMinimal, searchPagesWeighted } from "./database/pagesRepository";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
@@ -56,11 +56,11 @@ api.get("/docs/:docName/pages", zValidator("param", z.object({ docName: z.coerce
 
 // GET page by docName and pageName
 api.get(
-  "/docs/:docName/pages/:pageName",
-  zValidator("param", z.object({ docName: z.coerce.string(), pageName: z.coerce.string() })),
+  "/docs/:docName/pages/:pagePath",
+  zValidator("param", z.object({ docName: z.coerce.string(), pagePath: z.coerce.string() })),
   async (c) => {
     try {
-      const { docName, pageName } = c.req.valid("param");
+      const { docName, pagePath } = c.req.valid("param");
 
       // This can be optimized into a single call
       const docExists = await getDocsByName(docName);
@@ -68,7 +68,7 @@ api.get(
         return c.json({ error: "Doc not found" }, 404);
       }
 
-      const page = await getPageByNameMinimal(docExists.id, pageName);
+      const page = await getPageByPathMinimal(docExists.id, pagePath);
 
       if (!page) {
         return c.json({ error: "Page not found" }, 404);

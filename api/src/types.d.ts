@@ -16,11 +16,13 @@ export type DocMinimalResponse = Pick<Doc, "name" | "description" | "sourceUrl">
 export type PageMinimalResponse = {
   title: string;
   description: string | null;
+  path: string;
   content: string;
 };
 
 export type PageSearchResultWithScore = {
   title: string;
   description: string | null;
+  path: string;
   relevanceScore: number;
 };

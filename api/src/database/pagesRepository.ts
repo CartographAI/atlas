@@ -4,42 +4,20 @@ import { sql } from "kysely";
 
 const pagesTable = "atlas.pages";
 
-export async function getPagesByDocId(docId: number): Promise<Page[]> {
-  return dbClient.selectFrom(pagesTable).selectAll().where("docId", "=", docId).execute();
-}
-
 export async function getPagesByDocIdMinimal(docId: number): Promise<PageMinimalResponse[]> {
   return dbClient
     .selectFrom(pagesTable)
-    .select(["title", "description", "processedContent as content"])
+    .select(["title", "description", "path", "processedContent as content"])
     .where("docId", "=", docId)
     .execute();
 }
 
-export async function getPageById(docId: number, pageId: number): Promise<Page | undefined> {
+export async function getPageByPathMinimal(docId: number, pagePath: string): Promise<PageMinimalResponse | undefined> {
   return dbClient
     .selectFrom(pagesTable)
-    .selectAll()
+    .select(["title", "description", "path", "processedContent as content"])
     .where("docId", "=", docId)
-    .where("id", "=", pageId)
-    .executeTakeFirst();
-}
-
-export async function getPageByName(docId: number, pageName: string): Promise<Page | undefined> {
-  return dbClient
-    .selectFrom(pagesTable)
-    .selectAll()
-    .where("docId", "=", docId)
-    .where("title", "=", pageName)
-    .executeTakeFirst();
-}
-
-export async function getPageByNameMinimal(docId: number, pageName: string): Promise<PageMinimalResponse | undefined> {
-  return dbClient
-    .selectFrom(pagesTable)
-    .select(["title", "description", "processedContent as content"])
-    .where("docId", "=", docId)
-    .where("title", "=", pageName)
+    .where("path", "=", pagePath)
     .executeTakeFirst();
 }
 
@@ -85,7 +63,7 @@ export async function searchPagesWeighted(
 
   const results = await dbClient
     .selectFrom(pagesTable)
-    .select(["title", "description"])
+    .select(["title", "description", "path"])
     .select(
       // Calculate and select the relevance score using ts_rank_cd
       sql<number>`ts_rank_cd(${weightedTsVector}, ${tsQuery})`.as("relevanceScore"),
