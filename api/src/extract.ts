@@ -75,14 +75,17 @@ export function extractLinksFromLlmsTxt(markdown: string): Link[] {
     if (href) {
       let description = "";
 
-      const title = $(node).text();
-      const listItemText = $(node).parent().text();
-      const listItemDescription = listItemText.replace(title, "");
+      const title = $(node).text().trim();
+      const listItemNode = $(node).parent();
+      // Clone the list item, remove the link, then get text to isolate description
+      const listItemDescription = listItemNode.clone().find("a").remove().end().text().trim();
 
       // Check if there's a colon at the beginning
       if (listItemDescription.indexOf(":") === 0) {
         // Extract the text after the colon and trim it
         description = listItemDescription.substring(1).trim();
+      } else if (listItemDescription) {
+        console.warn(`List item text without leading colon: "${listItemDescription}" for link "${title}"`);
       }
 
       links.push({ title, href, description });
