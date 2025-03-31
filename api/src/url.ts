@@ -42,7 +42,7 @@ export function getUrlPath(url: string, baseUrl: string): string | null {
     }
 
     // Join remaining path segments with /
-    const path = relativePath.join("/");
+    const path = "/" + relativePath.join("/");
 
     return path;
   } catch (error) {
