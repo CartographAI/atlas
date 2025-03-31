@@ -35,6 +35,9 @@ const libraryUrls: LibraryUrls = {
   ModelContextProtocol: "https://modelcontextprotocol.io/llms.txt",
   "Trigger.dev": "https://trigger.dev/docs/llms.txt",
   "ast-grep": "https://ast-grep.github.io/llms.txt",
+  Svelte: "https://svelte.dev/docs/svelte/overview",
+  Pglite: "https://pglite.dev/docs/about",
+  Astro: "https://docs.astro.build/en/getting-started",
 };
 
 async function processPage(
