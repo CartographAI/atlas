@@ -123,7 +123,9 @@ async function processDocumentation(libraryName: string, url: string) {
       .filter((link) => !link.href.startsWith("#")) // filter relative subheading links
       .map((link) => {
         try {
-          return { title: link.title, description: link.description, href: new URL(link.href, url).href }; // Resolve relative URLs
+          const slug = link.href;
+          const relativePath = slug.startsWith("/") ? slug.substring(1) : slug;
+          return { ...link, href: new URL(relativePath, url).href }; // Resolve relative URLs
         } catch (e) {
           return null; // Invalid URL
         }
