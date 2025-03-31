@@ -104,10 +104,11 @@ async function processDocumentation(libraryName: string, url: string) {
     };
     doc = await createDoc(newDoc);
 
-    const baseUrl = url.split("/").filter(Boolean).slice(0, -1).join("/");
+    const parts = url.split("/").filter(Boolean);
+    const withoutLastSegmentPath = parts.slice(0, -1).join("/");
 
     // Process the initial page and get its content
-    const initialContent = await processPage(url, doc.id, baseUrl, "llms.txt");
+    const initialContent = await processPage(url, doc.id, withoutLastSegmentPath, "llms.txt");
     if (!initialContent) {
       throw new Error("Failed to process initial page");
     }
@@ -132,7 +133,7 @@ async function processDocumentation(libraryName: string, url: string) {
     // Filter unique URLs
     const uniqueLinks = absoluteLinks.filter((link) => {
       const cleanUrl = link.href.split("#")[0];
-      if (!processedUrls.has(cleanUrl) && checkBaseUrl(cleanUrl, baseUrl)) {
+      if (!processedUrls.has(cleanUrl) && checkBaseUrl(cleanUrl, withoutLastSegmentPath)) {
         processedUrls.add(cleanUrl);
         return true;
       }
@@ -141,7 +142,7 @@ async function processDocumentation(libraryName: string, url: string) {
 
     // Process all links in parallel
     const pageProcessingPromises = uniqueLinks.map((link) =>
-      processPage(link.href, doc.id, baseUrl, link.title, link.description),
+      processPage(link.href, doc.id, withoutLastSegmentPath, link.title, link.description),
     );
 
     // Wait for all pages to be processed
