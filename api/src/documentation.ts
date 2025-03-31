@@ -8,6 +8,7 @@ import {
   extractDescription,
   type Link,
   relativizeMarkdownLinks,
+  extractLinksFromHtml,
 } from "./extract";
 import { checkBaseUrl, getUrlPath } from "./url";
 
@@ -106,15 +107,68 @@ async function processDocumentation(libraryName: string, url: string) {
 
     const parts = url.split("/").filter(Boolean);
     const withoutLastSegmentPath = parts.slice(0, -1).join("/");
+    const lastSegmentPath = parts[parts.length - 1];
 
-    // Process the initial page and get its content
-    const initialContent = await processPage(url, doc.id, withoutLastSegmentPath, "llms.txt");
-    if (!initialContent) {
-      throw new Error("Failed to process initial page");
+    let llmsTxtContent: string | null = null;
+
+    if (lastSegmentPath !== "llms.txt") {
+      const { pageData, contentType } = await fetchURL(url);
+
+      const links = extractLinksFromHtml(pageData);
+      // Handle relative URLs
+      const absoluteLinks: Link[] = links
+        .filter((link) => !link.href.startsWith("#")) // filter relative subheading links
+        .map((link) => {
+          try {
+            return { title: link.title, description: link.description, href: new URL(link.href, url).href }; // Resolve relative URLs
+          } catch (e) {
+            return null; // Invalid URL
+          }
+        })
+        .filter((link): link is Link => link !== null);
+
+      const processedUrls = new Set<string>();
+
+      // Filter unique URLs
+      const uniqueLinks = absoluteLinks.filter((link) => {
+        const cleanUrl = link.href.split("#")[0];
+        if (!processedUrls.has(cleanUrl) && checkBaseUrl(cleanUrl, withoutLastSegmentPath)) {
+          processedUrls.add(cleanUrl);
+          return true;
+        }
+        return false;
+      });
+
+      const llmsTxtContentFullLinks = `
+# ${libraryName}
+
+## Docs
+
+${uniqueLinks.map((link) => `- [${link.title}](${link.href})`).join("\n")}
+`;
+
+      llmsTxtContent = relativizeMarkdownLinks(llmsTxtContentFullLinks, withoutLastSegmentPath);
+
+      const newPage: NewPage = {
+        docId: doc.id,
+        title: "llms.txt",
+        description: "",
+        sourceContent: pageData,
+        processedContent: llmsTxtContent.trim(),
+        path: "/llms.txt",
+      };
+      await createPage(newPage);
+    } else {
+      // Process the initial page and get its content
+      llmsTxtContent = await processPage(url, doc.id, withoutLastSegmentPath, "llms.txt");
+    }
+
+    if (!llmsTxtContent) {
+      throw new Error("No llmsTxtContent created");
     }
 
     // Extract all links from the initial page
-    const links = extractLinksFromLlmsTxt(initialContent);
+    const links = extractLinksFromLlmsTxt(llmsTxtContent);
 
     const processedUrls = new Set<string>();
 

@@ -95,6 +95,26 @@ export function extractLinksFromLlmsTxt(markdown: string): Link[] {
   return links;
 }
 
+export function extractLinksFromHtml(html: string): Link[] {
+  const links: Link[] = [];
+  const $ = cheerio.load(html);
+
+  $("a").each((_, node) => {
+    const href = $(node).attr("href");
+    const title = $(node).text().trim();
+
+    if (href && title) {
+      links.push({
+        title: title,
+        href: href,
+        description: "",
+      });
+    }
+  });
+
+  return links;
+}
+
 export function extractDescription(markdown: string): string | null {
   // Match content between > and the next newline
   // only if its near the top
