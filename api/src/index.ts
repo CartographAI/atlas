@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { logger } from "hono/logger";
 import { getDocsMinimal, getDocsByName, getDocsByNameMinimal } from "./database/docsRepository";
 import { getPageByPathMinimal, getPagesByDocIdMinimal, searchPagesWeighted } from "./database/pagesRepository";
 import { z } from "zod";
@@ -107,6 +108,7 @@ api.get(
 );
 
 const app = new Hono();
+app.use(logger());
 app.route("/api", api);
 
 export default app;
