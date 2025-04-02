@@ -147,7 +147,7 @@ async function processDocumentation(libraryName: string, url: string) {
 
 ## Docs
 
-${uniqueLinks.map((link) => `- [${link.title}](${link.href})`).join("\n")}
+${uniqueLinks.map((link) => `- [${link.title.replaceAll("<", "\\<").replaceAll(">", "\\>")}](${link.href})`).join("\n")}
 `;
 
       llmsTxtContent = relativizeMarkdownLinks(llmsTxtContentFullLinks, withoutLastSegmentPath);
