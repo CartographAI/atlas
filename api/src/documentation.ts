@@ -93,6 +93,7 @@ async function processPage(
 }
 
 async function processDocumentation(libraryName: string, url: string) {
+  console.log(`Start processing ${libraryName} documentation`);
   try {
     // Delete doc if it already exists
     let doc = await getDocsByName(libraryName);
@@ -207,13 +208,40 @@ ${uniqueLinks.map((link) => `- [${link.title.replaceAll("<", "\\<").replaceAll("
     // Wait for all pages to be processed
     await Promise.all(pageProcessingPromises);
 
-    console.log(`Finished processing ${libraryName} documentation`);
+    console.log(`Finished processing ${libraryName} documentation (${uniqueLinks.length} pages).`);
   } catch (error) {
     console.error(`Error processing documentation for ${libraryName}:`, error);
     throw error;
   }
 }
 
-for (const [name, url] of Object.entries(libraryUrls)) {
-  processDocumentation(name, url);
+async function main() {
+  const args = process.argv.slice(2);
+
+  if (args.length === 0) {
+    console.log("Usage: bun run src/documentation.ts --all | <library names...>");
+    process.exit(0);
+  }
+
+  if (args[0] === "--all") {
+    // Process all libraries sequentially
+    for (const [name, url] of Object.entries(libraryUrls)) {
+      await processDocumentation(name, url);
+    }
+  } else {
+    // Process only specified libraries
+    for (const libraryName of args) {
+      const url = libraryUrls[libraryName];
+      if (!url) {
+        console.error(`Library "${libraryName}" not found in libraryUrls`);
+        continue;
+      }
+      await processDocumentation(libraryName, url);
+    }
+  }
 }
+
+main().catch((error) => {
+  console.error("Error:", error);
+  process.exit(1);
+});
