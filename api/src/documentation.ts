@@ -36,8 +36,11 @@ const libraryUrls: LibraryUrls = {
   "Trigger.dev": "https://trigger.dev/docs/llms.txt",
   "ast-grep": "https://ast-grep.github.io/llms.txt",
   Svelte: "https://svelte.dev/docs/svelte/overview",
+  SvelteKit: "https://svelte.dev/docs/kit/introduction",
   Pglite: "https://pglite.dev/docs/about",
   Astro: "https://docs.astro.build/en/getting-started",
+  "AI-SDK": "https://sdk.vercel.ai/docs/introduction",
+  "shadcn/ui": "https://ui.shadcn.com/docs",
 };
 
 async function processPage(
