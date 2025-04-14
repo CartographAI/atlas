@@ -41,6 +41,8 @@ const libraryUrls: LibraryUrls = {
   Astro: "https://docs.astro.build/en/getting-started",
   "AI-SDK": "https://sdk.vercel.ai/docs/introduction",
   "shadcn/ui": "https://ui.shadcn.com/docs",
+  "TanStack-Router": "https://tanstack.com/router/latest/docs/framework/react/overview",
+  tailwindcss: "https://tailwindcss.com/docs/installation",
 };
 
 async function processPage(
